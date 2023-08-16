@@ -1,6 +1,6 @@
 import os
 
-from load_data import load_mnist, load_fmnist, load_cifar10, load_svhn
+from load_data import load_mnist, load_fmnist, load_cifar10, load_gtsrb, load_svhn
 from model_lenet import LeNetModel
 from model_vgg import VGGModel
 from model_resnet18 import ResNet18Model
@@ -18,6 +18,10 @@ def train_model(id_dataset, model_save_path):
                            test_data=x_test, test_label=y_test, model_save_path=model_save_path)
     elif id_dataset == 'cifar10':
         x_train, y_train, x_test, y_test = load_cifar10()
+        model = VGGModel(train_class_number=num_of_labels[id_dataset], train_data=x_train, train_label=y_train,
+                         test_data=x_test, test_label=y_test, model_save_path=model_save_path)
+    elif id_dataset == 'gtsrb':
+        x_train, y_train, x_test, y_test = load_gtsrb()
         model = VGGModel(train_class_number=num_of_labels[id_dataset], train_data=x_train, train_label=y_train,
                          test_data=x_test, test_label=y_test, model_save_path=model_save_path)
     elif id_dataset == 'svhn':
@@ -44,7 +48,10 @@ if __name__ == "__main__":
     # dataset = 'cifar10'
     # save_path = './models/vgg19_cifar10/'
 
-    dataset = 'svhn'
-    save_path = './models/resnet18_svhn/'
+    dataset = 'gtsrb'
+    save_path = './models/vgg19_gtsrb/'
+
+    # dataset = 'svhn'
+    # save_path = './models/resnet18_svhn/'
 
     train_model(id_dataset=dataset, model_save_path=save_path)

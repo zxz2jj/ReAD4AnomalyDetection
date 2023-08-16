@@ -100,7 +100,7 @@ class ResNet18Model(object):
 
     def train(self, epochs=120):
         lr = 1e-1
-        model = self.resnet18(input_shape=(32, 32, 3), weight_decay=1e-4, lr=lr)
+        model = self.resnet18(input_shape=self.train_data.shape[1:], weight_decay=1e-4, lr=lr)
         reduce_lr = tf.keras.callbacks.LearningRateScheduler(self.lr_scheduler)
         # model.load_weights('/home/kengo/Documents/Detector_Evaluation/weights/svhn_resnet18.h5')
         model.fit(x=self.train_data, y=self.train_label, batch_size=128, epochs=epochs, callbacks=[reduce_lr],

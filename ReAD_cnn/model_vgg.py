@@ -21,7 +21,7 @@ class VGGModel(object):
         weight_decay = 0.0005
 
         model.add(tf.keras.layers.Conv2D(64, (3, 3), padding='same',
-                                         input_shape=[32, 32, 3], kernel_regularizer=tf.keras.regularizers.l2(weight_decay)))
+                                         input_shape=self.train_data.shape[1:], kernel_regularizer=tf.keras.regularizers.l2(weight_decay)))
         model.add(tf.keras.layers.Activation('relu'))
         model.add(tf.keras.layers.BatchNormalization())
         model.add(tf.keras.layers.Dropout(0.3))

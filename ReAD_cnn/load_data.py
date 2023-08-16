@@ -1,5 +1,7 @@
 import numpy as np
 import os
+import glob
+import pandas as pd
 from skimage import io, transform
 from scipy.io import loadmat
 import tensorflow as tf
@@ -41,6 +43,55 @@ def load_cifar10():
     y_test = y_test.reshape([-1])
     y_train_one_hot = tf.one_hot(y_train, 10)
     y_test_one_hot = tf.one_hot(y_test, 10)
+
+    return x_train, y_train_one_hot, \
+        x_test, y_test_one_hot
+
+
+def load_gtsrb():
+    if os.path.exists('./data/public/GTSRB/train_data.npy') and os.path.exists('./data/public/GTSRB/train_labels.npy'):
+        x_train = np.load('./data/public/GTSRB/train_data.npy')
+        y_train_one_hot = np.load('./data/public/GTSRB/train_labels.npy')
+    else:
+        root_dir = './data/public/GTSRB/Final_Training/Images/'
+        x_train = []
+        y_train = []
+        print('\nLoad GTSRB train dataset...')
+        all_img_paths = glob.glob(os.path.join(root_dir, '*/*.ppm'))
+
+        for img_path in all_img_paths:
+            img_path = img_path.replace('\\', '/')
+            print('\r', img_path, end='')
+            img = transform.resize(io.imread(img_path), (48, 48))
+            label = int(img_path.split('/')[-2])
+            x_train.append(img)
+            y_train.append(label)
+
+        x_train = np.array(x_train, dtype='float32')
+        y_train_category = np.array(y_train)
+        y_train_one_hot = tf.one_hot(y_train_category, 43)
+        np.save('./data/public/GTSRB/train_data.npy', x_train)
+        np.save('./data/public/GTSRB/train_labels.npy', y_train_one_hot)
+
+    if os.path.exists('./data/public/GTSRB/test_data.npy') and os.path.exists('./data/public/GTSRB/test_labels.npy'):
+        x_test = np.load('./data/public/GTSRB/test_data.npy')
+        y_test_one_hot = np.load('./data/public/GTSRB/test_labels.npy')
+    else:
+        test = pd.read_csv('./data/public/GTSRB/Final_Test/Images/GT-final_test.csv', sep=';')
+        x_test = []
+        y_test = []
+        print('\nLoad GTSRB test dataset...')
+        for file_name, class_id in zip(list(test['Filename']), list(test['ClassId'])):
+            img_path = os.path.join('./data/public/GTSRB/Final_Test/Images/', file_name)
+            print('\r', img_path, end='')
+            x_test.append(transform.resize(io.imread(img_path), (48, 48)))
+            y_test.append(class_id)
+
+        x_test = np.array(x_test)
+        y_test_category = np.array(y_test)
+        y_test_one_hot = tf.one_hot(y_test_category, 43)
+        np.save('./data/public/GTSRB/test_data.npy', x_test)
+        np.save('./data/public/GTSRB/test_labels.npy', y_test_one_hot)
 
     return x_train, y_train_one_hot, \
         x_test, y_test_one_hot
@@ -195,10 +246,18 @@ def load_ood_data(ood_dataset, id_model_path, num_of_categories):
             ood_test = load_isun(resize=48)
         else:
             ood_test = None
-    # if ood_dataset == 'UniformNoise':
-    #     ood_test = np.load("../public_data/UniformNoise/uniform_noise_size=28.npy")
-    # if ood_dataset == 'GuassianNoise':
-    #     ood_test = np.load("../public_data/GuassianNoise/guassian_noise_size=28.npy")
+    if ood_dataset == 'UniformNoise_28':
+        ood_test = np.load("../public_data/UniformNoise/uniform_noise_size=28.npy")
+    if ood_dataset == 'GuassianNoise_28':
+        ood_test = np.load("../public_data/GuassianNoise/guassian_noise_size=28.npy")
+    if ood_dataset == 'UniformNoise_32':
+        ood_test = np.load("../public_data/UniformNoise/uniform_noise_size=32.npy")
+    if ood_dataset == 'GuassianNoise_32':
+        ood_test = np.load("../public_data/GuassianNoise/guassian_noise_size=32.npy")
+    if ood_dataset == 'UniformNoise_48':
+        ood_test = np.load("../public_data/UniformNoise/uniform_noise_size=48.npy")
+    if ood_dataset == 'GuassianNoise_48':
+        ood_test = np.load("../public_data/GuassianNoise/guassian_noise_size=48.npy")
 
     number_of_test = ood_test.shape[0]
     model = tf.keras.models.load_model(id_model_path+'tf_model.h5')
