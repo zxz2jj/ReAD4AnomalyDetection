@@ -1,12 +1,13 @@
 import pickle
 import os
+import time
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 import tensorflow as tf
 
 from train_models import train_model
-from load_data import load_mnist, load_fmnist, load_cifar10, load_gtsrb, load_svhn, load_clean_adv_data, load_ood_data
+from load_data import load_fmnist, load_cifar10, load_svhn, load_clean_adv_data
 from ReAD import classify_id_pictures, get_neural_value, statistic_of_neural_value, encode_abstraction, \
     concatenate_data_between_layers, k_means, statistic_distance, auroc, sk_auc
 from ReAD import t_sne_visualization
@@ -15,30 +16,25 @@ from global_config import num_of_labels, selective_rate, cnn_config
 
 if __name__ == "__main__":
 
-    # id_dataset = 'mnist'
-    # model_path = './models/lenet_mnist/'
-    # detector_path = './data/mnist/detector/'
-    # x_train, y_train, x_test, y_test = load_mnist()
-
-    # id_dataset = 'fmnist'
+    # clean_dataset = 'fmnist'
     # model_path = './models/lenet_fmnist/'
     # detector_path = './data/fmnist/detector/'
     # x_train, y_train, x_test, y_test = load_fmnist()
 
-    # id_dataset = 'cifar10'
+    # clean_dataset = 'cifar10'
     # model_path = './models/vgg19_cifar10/'
     # detector_path = './data/cifar10/detector/'
     # x_train, y_train, x_test, y_test = load_cifar10()
 
-    id_dataset = 'gtsrb'
-    model_path = './models/vgg19_gtsrb/'
-    detector_path = './data/gtsrb/detector/'
-    x_train, y_train, x_test, y_test = load_gtsrb()
+    clean_dataset = 'svhn'
+    model_path = './models/resnet18_svhn/'
+    detector_path = './data/svhn/detector/'
+    x_train, y_train, x_test, y_test = load_svhn()
 
-    # train models. If model is existed, it will show the information of model
+    # train models. If model is existed, it will show details of the model
     show_model = False
     if show_model:
-        train_model(id_dataset=id_dataset, model_save_path=model_path)
+        train_model(id_dataset=clean_dataset, model_save_path=model_path)
 
     train_nv_statistic = None
     k_means_centers = None
@@ -55,21 +51,17 @@ if __name__ == "__main__":
         distance_train_statistic = pickle.load(file3)
 
     else:
-        if not os.path.exists(f'./data/{id_dataset}'):
-            os.mkdir(f'./data/{id_dataset}')
-        if not os.path.exists(detector_path):
-            os.mkdir(detector_path)
         # ********************** Train Detector **************************** #
         print('\n********************** Train Detector ****************************')
         train_picture_classified = classify_id_pictures(dataset=x_train, labels=tf.argmax(y_train, axis=1),
-                                                        model_path=model_path, num_of_labels=num_of_labels[id_dataset])
+                                                        model_path=model_path, num_of_labels=num_of_labels[clean_dataset])
 
         print('\nGet neural value of train dataset:')
-        train_picture_neural_value = get_neural_value(id_dataset=id_dataset, model_path=model_path,
+        train_picture_neural_value = get_neural_value(id_dataset=clean_dataset, model_path=model_path,
                                                       pictures_classified=train_picture_classified)
 
         print('\nStatistic of train data neural value:')
-        train_nv_statistic = statistic_of_neural_value(id_dataset=id_dataset,
+        train_nv_statistic = statistic_of_neural_value(id_dataset=clean_dataset,
                                                        neural_value=train_picture_neural_value)
         print('finished!')
 
@@ -77,69 +69,71 @@ if __name__ == "__main__":
         pickle.dump(train_nv_statistic, file1)
         file1.close()
 
-        print('\nEncoding ReAD abstractions of train dataset:')
-        train_ReAD_abstractions = encode_abstraction(id_dataset=id_dataset, neural_value=train_picture_neural_value,
+        print('\nEncoding combination abstraction of train dataset:')
+        train_ReAD_abstractions = encode_abstraction(id_dataset=clean_dataset, neural_value=train_picture_neural_value,
                                                      train_dataset_statistic=train_nv_statistic)
         train_ReAD_concatenated = \
-            concatenate_data_between_layers(id_dataset=id_dataset, data_dict=train_ReAD_abstractions)
+            concatenate_data_between_layers(id_dataset=clean_dataset, data_dict=train_ReAD_abstractions)
 
         # visualization will need some minutes. If you want to show the visualization, please run the following codes.
         show_visualization = False
         if show_visualization:
             print('\nShow t-SNE visualization results on ReAD.')
             t_sne_visualization(data=train_ReAD_concatenated,
-                                category_number=num_of_labels[id_dataset])
+                                category_number=num_of_labels[clean_dataset])
 
         print('\nK-Means Clustering of Combination Abstraction on train data:')
         k_means_centers = k_means(data=train_ReAD_concatenated,
-                                  category_number=num_of_labels[id_dataset])
+                                  category_number=num_of_labels[clean_dataset])
         file2 = open(detector_path + 'k_means_centers.pkl', 'wb')
         pickle.dump(k_means_centers, file2)
         file2.close()
 
         print('\nCalculate distance between abstractions and cluster centers ...')
-        distance_train_statistic = statistic_distance(id_dataset=id_dataset, abstractions=train_ReAD_concatenated,
+        distance_train_statistic = statistic_distance(id_dataset=clean_dataset, abstractions=train_ReAD_concatenated,
                                                       cluster_centers=k_means_centers)
         file3 = open(detector_path + 'distance_of_ReAD_for_train_data.pkl', 'wb')
         pickle.dump(distance_train_statistic, file3)
         file3.close()
 
-    # ********************** Evaluate OOD Detection **************************** #
-    print('\n********************** Evaluate OOD Detection ****************************')
-    test_picture_classified = classify_id_pictures(dataset=x_test, labels=tf.argmax(y_test, axis=1),
-                                                   model_path=model_path, num_of_labels=num_of_labels[id_dataset])
-    print('\nGet neural value of test dataset:')
-    test_picture_neural_value = get_neural_value(id_dataset=id_dataset, model_path=model_path,
-                                                 pictures_classified=test_picture_classified)
-    print('\nEncoding ReAD abstraction of test dataset:')
-    print("selective rate: {}".format(selective_rate))
-    test_ReAD_abstractions = encode_abstraction(id_dataset=id_dataset, neural_value=test_picture_neural_value,
-                                                train_dataset_statistic=train_nv_statistic)
-    test_ReAD_concatenated = concatenate_data_between_layers(id_dataset=id_dataset, data_dict=test_ReAD_abstractions)
-    print('\nCalculate distance between abstractions and cluster centers ...')
-    test_distance = statistic_distance(id_dataset=id_dataset, abstractions=test_ReAD_concatenated,
-                                       cluster_centers=k_means_centers)
+    # ********************** Evaluate adversarial Detection **************************** #
+    print('\n********************** Evaluate Adversarial Detection ****************************')
+    adversarial_attacks = ['ba']
+    # adversarial_attacks = cnn_config[clean_dataset]['adversarial_settings']
+    for attack in adversarial_attacks:
+        print(f'\nATTACK: {attack}')
+        clean_data_classified, adv_data_classified, num_of_test = \
+            load_clean_adv_data(id_dataset=clean_dataset, attack=attack, num_of_categories=num_of_labels[clean_dataset])
 
-    OOD_dataset = cnn_config[id_dataset]['ood_settings']
-    for ood in OOD_dataset:
-        print('\n************Evaluating*************')
-        print(f'In-Distribution Data: {id_dataset}, Out-of-Distribution Data: {ood}.')
-        ood_data, number_of_ood = load_ood_data(ood_dataset=ood, id_model_path=model_path,
-                                                num_of_categories=num_of_labels[id_dataset])
+        print('\nGet neural value:')
+        print('CLEAN dataset ...')
+        clean_data_neural_value = get_neural_value(id_dataset=clean_dataset, model_path=model_path,
+                                                   pictures_classified=clean_data_classified)
+        print('ADVERSARIAL dataset ...')
+        adv_data_neural_value = get_neural_value(id_dataset=clean_dataset, model_path=model_path,
+                                                 pictures_classified=adv_data_classified)
+        print(f'\nEncoding: (selective rate - {selective_rate}):')
+        print("CLEAN dataset ...")
+        clean_data_ReAD = encode_abstraction(id_dataset=clean_dataset, neural_value=clean_data_neural_value,
+                                             train_dataset_statistic=train_nv_statistic)
+        print('ADVERSARIAL dataset ...')
+        adv_data_ReAD = encode_abstraction(id_dataset=clean_dataset, neural_value=adv_data_neural_value,
+                                           train_dataset_statistic=train_nv_statistic)
+        clean_ReAD_concatenated = \
+            concatenate_data_between_layers(id_dataset=clean_dataset, data_dict=clean_data_ReAD)
+        adv_ReAD_concatenated = \
+            concatenate_data_between_layers(id_dataset=clean_dataset, data_dict=adv_data_ReAD)
 
-        print('\nGet neural value of ood dataset...')
-        ood_picture_neural_value = get_neural_value(id_dataset=id_dataset, model_path=model_path,
-                                                    pictures_classified=ood_data)
-        print('\nEncoding ReAD abstraction of ood dataset...')
-        ood_ReAD_abstractions = encode_abstraction(id_dataset=id_dataset, neural_value=ood_picture_neural_value,
-                                                   train_dataset_statistic=train_nv_statistic)
-        ood_ReAD_concatenated = concatenate_data_between_layers(id_dataset=id_dataset, data_dict=ood_ReAD_abstractions)
         print('\nCalculate distance between abstractions and cluster centers ...')
-        ood_distance = statistic_distance(id_dataset=id_dataset, abstractions=ood_ReAD_concatenated,
+        print('CLEAN dataset ...')
+        clean_distance = statistic_distance(id_dataset=clean_dataset, abstractions=clean_ReAD_concatenated,
+                                            cluster_centers=k_means_centers)
+        print('ADVERSARIAL dataset ...')
+        adv_distance = statistic_distance(id_dataset=clean_dataset, abstractions=adv_ReAD_concatenated,
                                           cluster_centers=k_means_centers)
 
         # auc = auroc(distance_train_statistic, clean_distance, adv_distance, num_of_labels[clean_dataset])
-        auc = sk_auc(test_distance, ood_distance, num_of_labels[id_dataset])
+        auc = sk_auc(clean_distance, adv_distance, num_of_labels[clean_dataset])
 
         print('\nPerformance of Detector:')
         print('AUROC: {:.6f}'.format(auc))

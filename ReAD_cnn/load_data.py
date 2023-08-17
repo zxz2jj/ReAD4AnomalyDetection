@@ -274,10 +274,10 @@ def load_ood_data(ood_dataset, id_model_path, num_of_categories):
 
 
 def load_clean_adv_data(id_dataset, attack, num_of_categories):
-    adv_data = np.load(f'./data/{id_dataset}/Adversarial/{attack}_adv_data.npy')
-    adv_targets = np.load(f'./data/{id_dataset}/Adversarial/{attack}_adv_targets.npy')
-    clean_data = np.load(f'./data/{id_dataset}/Adversarial/{attack}_clean_data.npy')
-    clean_labels = np.load(f'./data/{id_dataset}/Adversarial/{attack}_clean_labels.npy')
+    adv_data = np.load(f'./data/{id_dataset}/adversarial/{attack}_adv_data.npy')
+    adv_targets = np.load(f'./data/{id_dataset}/adversarial/{attack}_adv_targets.npy')
+    clean_data = np.load(f'./data/{id_dataset}/adversarial/{attack}_clean_data.npy')
+    clean_labels = np.load(f'./data/{id_dataset}/adversarial/{attack}_clean_labels.npy')
 
     number_of_test = clean_data.shape[0]
 

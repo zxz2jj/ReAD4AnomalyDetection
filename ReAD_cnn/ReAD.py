@@ -13,7 +13,7 @@ import global_config
 
 def classify_id_pictures(dataset, labels, model_path, num_of_labels):
     """
-    divide the dataset into correct predictions and wrong predictions.
+    divide the in-distribution dataset into correct predictions and wrong predictions.
     :return:
     """
 
@@ -47,9 +47,6 @@ def classify_id_pictures(dataset, labels, model_path, num_of_labels):
 
 
 def get_neural_value(id_dataset, model_path, pictures_classified):
-    """
-    给出图片数据集，输出每张图片经过网络后，每个位置上的神经元输出值
-    """
 
     model = tf.keras.models.load_model(model_path+'tf_model.h5')
     layers = cnn_config[id_dataset]['layers_of_getting_value']

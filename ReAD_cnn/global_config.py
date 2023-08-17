@@ -17,12 +17,16 @@ cnn_config = {
     'fmnist': {
         'layers_of_getting_value': [-10, -8, -6, -4],
         'neurons_of_each_layer': [320, 160, 80, 40],
-        'ood_settings': ['MNIST', 'Omniglot', 'UniformNoise_28', 'GuassianNoise_28']
+        'ood_settings': ['MNIST', 'Omniglot', 'UniformNoise_28', 'GuassianNoise_28'],
+        'adversarial_settings': ['ba', 'cw_l2',  'deepfool', 'ead', 'fgsm', 'hopskipjumpattack_l2',
+                                 'jsma', 'newtonfool', 'pixelattack',  'squareattack_linf', 'wassersteinattack']
     },
     'cifar10': {
         'layers_of_getting_value': [-5],
         'neurons_of_each_layer': [512],
-        'ood_settings': ['TinyImageNet', 'LSUN', 'iSUN', 'UniformNoise_32', 'GuassianNoise_32']
+        'ood_settings': ['TinyImageNet', 'LSUN', 'iSUN', 'UniformNoise_32', 'GuassianNoise_32'],
+        'adversarial_settings': ['ba', 'cw_l2', 'deepfool', 'ead', 'fgsm', 'hopskipjumpattack_l2',
+                                 'jsma', 'newtonfool', 'pixelattack', 'squareattack_linf', 'wassersteinattack']
     },
     'gtsrb': {
         'layers_of_getting_value': [-5],
@@ -31,7 +35,9 @@ cnn_config = {
     },
     'svhn': {
         'layers_of_getting_value': [-4],
-        'neurons_of_each_layer': [512]
+        'neurons_of_each_layer': [512],
+        'adversarial_settings': ['ba', 'cw_l2', 'deepfool', 'ead', 'fgsm', 'hopskipjumpattack_l2',
+                                 'jsma', 'newtonfool', 'pixelattack', 'squareattack_linf', 'wassersteinattack']
     },
 }
 
