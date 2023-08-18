@@ -15,10 +15,10 @@ from global_config import num_of_labels, selective_rate, cnn_config
 
 if __name__ == "__main__":
 
-    # id_dataset = 'mnist'
-    # model_path = './models/lenet_mnist/'
-    # detector_path = './data/mnist/detector/'
-    # x_train, y_train, x_test, y_test = load_mnist()
+    id_dataset = 'mnist'
+    model_path = './models/lenet_mnist/'
+    detector_path = './data/mnist/detector/'
+    x_train, y_train, x_test, y_test = load_mnist()
 
     # id_dataset = 'fmnist'
     # model_path = './models/lenet_fmnist/'
@@ -30,10 +30,10 @@ if __name__ == "__main__":
     # detector_path = './data/cifar10/detector/'
     # x_train, y_train, x_test, y_test = load_cifar10()
 
-    id_dataset = 'gtsrb'
-    model_path = './models/vgg19_gtsrb/'
-    detector_path = './data/gtsrb/detector/'
-    x_train, y_train, x_test, y_test = load_gtsrb()
+    # id_dataset = 'gtsrb'
+    # model_path = './models/vgg19_gtsrb/'
+    # detector_path = './data/gtsrb/detector/'
+    # x_train, y_train, x_test, y_test = load_gtsrb()
 
     # train models. If model is existed, it will show the information of model
     show_model = False

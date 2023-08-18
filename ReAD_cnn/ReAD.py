@@ -1,3 +1,4 @@
+import matplotlib.pyplot as plt
 import numpy as np
 import math
 import tensorflow as tf
@@ -5,7 +6,6 @@ from sklearn.cluster import KMeans
 from sklearn import metrics
 from sklearn.metrics import auc, roc_curve
 from sklearn.manifold import TSNE
-import matplotlib.pylab as plt
 
 from global_config import num_of_labels, cnn_config
 import global_config
