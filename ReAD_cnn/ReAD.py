@@ -154,20 +154,12 @@ def encode_by_selective(image_neural_value, label, encode_rate, number_of_neuron
     sort_by_sel = sorted(dict_sel.items(), key=lambda x: x[1])
 
     combination_code = [0 for _ in range(number_of_neuron)]
-    only_active_code = [0 for _ in range(number_of_neuron)]
-    only_deactive_code = [0 for _ in range(number_of_neuron)]
     for k in range(0, math.ceil(number_of_neuron * encode_rate / 2), 1):
         combination_code[sort_by_sel[k][0]] = -1
     for k in range(-1, -math.ceil(number_of_neuron * encode_rate / 2) - 1, -1):
         combination_code[sort_by_sel[k][0]] = 1
 
-    for k in range(-1, -math.ceil(number_of_neuron * encode_rate) - 1, -1):
-        only_active_code[sort_by_sel[k][0]] = 1
-
-    for k in range(0, math.ceil(number_of_neuron * encode_rate), 1):
-        only_deactive_code[sort_by_sel[k][0]] = -1
-
-    return combination_code, only_active_code, only_deactive_code
+    return combination_code
 
 
 def encode_abstraction(id_dataset, neural_value, train_dataset_statistic):
@@ -197,9 +189,7 @@ def encode_abstraction(id_dataset, neural_value, train_dataset_statistic):
                 else:
                     for image, label in \
                             zip(neural_value_category['correct_pictures'], neural_value_category['correct_prediction']):
-                        combination, only_active, only_deactive = \
-                            encode_by_selective(image, label, global_config.selective_rate, neuron_number_list[k],
-                                                non_class_l_avg, all_class_avg)
+                        combination = encode_by_selective(image, label, global_config.selective_rate, neuron_number_list[k], non_class_l_avg, all_class_avg)
                         correct_abstraction_list.append(combination)
             else:
                 correct_abstraction_list = None
@@ -210,9 +200,7 @@ def encode_abstraction(id_dataset, neural_value, train_dataset_statistic):
                 else:
                     for image, label in \
                             zip(neural_value_category['wrong_pictures'],  neural_value_category['wrong_prediction']):
-                        combination, only_active, only_deactive = \
-                            encode_by_selective(image, label, global_config.selective_rate, neuron_number_list[k],
-                                                non_class_l_avg, all_class_avg)
+                        combination = encode_by_selective(image, label, global_config.selective_rate, neuron_number_list[k], non_class_l_avg, all_class_avg)
                         wrong_abstraction_list.append(combination)
             else:
                 wrong_abstraction_list = None

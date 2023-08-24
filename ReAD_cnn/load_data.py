@@ -247,17 +247,17 @@ def load_ood_data(ood_dataset, id_model_path, num_of_categories):
         else:
             ood_test = None
     if ood_dataset == 'UniformNoise_28':
-        ood_test = np.load("../public_data/UniformNoise/uniform_noise_size=28.npy")
+        ood_test = np.load("./data/public/UniformNoise/uniform_noise_size=28.npy")
     if ood_dataset == 'GuassianNoise_28':
-        ood_test = np.load("../public_data/GuassianNoise/guassian_noise_size=28.npy")
+        ood_test = np.load("./data/public/GuassianNoise/guassian_noise_size=28.npy")
     if ood_dataset == 'UniformNoise_32':
-        ood_test = np.load("../public_data/UniformNoise/uniform_noise_size=32.npy")
+        ood_test = np.load("./data/public/UniformNoise/uniform_noise_size=32.npy")
     if ood_dataset == 'GuassianNoise_32':
-        ood_test = np.load("../public_data/GuassianNoise/guassian_noise_size=32.npy")
+        ood_test = np.load("./data/public/GuassianNoise/guassian_noise_size=32.npy")
     if ood_dataset == 'UniformNoise_48':
-        ood_test = np.load("../public_data/UniformNoise/uniform_noise_size=48.npy")
+        ood_test = np.load("./data/public/UniformNoise/uniform_noise_size=48.npy")
     if ood_dataset == 'GuassianNoise_48':
-        ood_test = np.load("../public_data/GuassianNoise/guassian_noise_size=48.npy")
+        ood_test = np.load("./data/public/GuassianNoise/guassian_noise_size=48.npy")
 
     number_of_test = ood_test.shape[0]
     model = tf.keras.models.load_model(id_model_path+'tf_model.h5')
