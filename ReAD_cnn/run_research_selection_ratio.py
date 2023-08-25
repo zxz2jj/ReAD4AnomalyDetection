@@ -4,8 +4,8 @@ import matplotlib.pyplot as plt
 import pickle
 import os
 import tensorflow as tf
-
-from load_data import load_mnist, load_fmnist, load_cifar10, load_svhn, load_clean_adv_data, load_ood_data
+from load_data import load_mnist, load_fmnist, load_cifar10, load_svhn, load_gtsrb, \
+    load_clean_adv_data, load_ood_data
 from ReAD import statistic_of_neural_value, classify_id_pictures, get_neural_value
 from ReAD import encode_abstraction, concatenate_data_between_layers
 from ReAD import k_means, statistic_distance
@@ -16,11 +16,11 @@ import global_config
 
 if __name__ == "__main__":
     # conduct selection ratio research on adversarial/ood detection tasks
-    # for_adversarial_detection = True
-    # for_ood_detection = False
+    for_adversarial_detection = True
+    for_ood_detection = False
 
-    for_adversarial_detection = False
-    for_ood_detection = True
+    # for_adversarial_detection = False
+    # for_ood_detection = True
 
     if for_adversarial_detection is True:
         if os.path.exists(f'./data/fmnist/selection_ratio_adversarial.pkl') and \
@@ -49,7 +49,7 @@ if __name__ == "__main__":
             plt.tick_params(labelsize=15)
             plt.ylim(0.7, 1)
             ax = plt.gca()
-            y_major_locator = plt.MultipleLocator(0.02)
+            y_major_locator = plt.MultipleLocator(0.05)
             ax.yaxis.set_major_locator(y_major_locator)
             ax.vlines(0.2, 0.7, 1.0, linestyles='--', colors='darkgray')
             plt.show()
@@ -177,30 +177,33 @@ if __name__ == "__main__":
 
     # ###############################################################################################################
     if for_ood_detection is True:
-        if os.path.exists(f'./data/fmnist/selection_ratio_ood.pkl') and \
+        if os.path.exists(f'./data/mnist/selection_ratio_ood.pkl') and \
+                os.path.exists(f'./data/fmnist/selection_ratio_ood.pkl') and \
                 os.path.exists(f'./data/cifar10/selection_ratio_ood.pkl') and \
-                os.path.exists(f'./data/cifar10/selection_ratio_ood.pkl'):
+                os.path.exists(f'./data/gtsrb/selection_ratio_ood.pkl'):
             print('Research is finished!')
 
-            file1 = open(f'./data/fmnist/selection_ratio_ood.pkl', 'rb')
-            file2 = open(f'./data/cifar10/selection_ratio_ood.pkl', 'rb')
-            file3 = open(f'./data/svhn/selection_ratio_ood.pkl', 'rb')
-            fmnist_performance = pickle.load(file1)
-            cifar10_performance = pickle.load(file2)
-            svhn_performance = pickle.load(file3)
+            file1 = open(f'./data/mnist/selection_ratio_ood.pkl', 'rb')
+            file2 = open(f'./data/fmnist/selection_ratio_ood.pkl', 'rb')
+            file3 = open(f'./data/cifar10/selection_ratio_ood.pkl', 'rb')
+            file4 = open(f'./data/gtsrb/selection_ratio_ood.pkl', 'rb')
+            mnist_performance = pickle.load(file1)
+            fmnist_performance = pickle.load(file2)
+            cifar10_performance = pickle.load(file3)
+            gtsrb_performance = pickle.load(file4)
             ood = ['FMNIST', 'MNIST','Omniglot', 'TinyImageNet', 'LSUN', 'iSUN', 'UniformNoise_28', 'GuassianNoise_28',
                    'UniformNoise_32', 'GuassianNoise_32', 'UniformNoise_48', 'GuassianNoise_48']
 
-            x = [0.01*a for a in range(1, 3)]
+            x = [0.01*a for a in range(1, 101)]
             for o in ood:
+                if mnist_performance[o]:
+                    plt.plot(x, mnist_performance[o], label=f'MNIST vs {o}')
                 if fmnist_performance[o]:
                     plt.plot(x, fmnist_performance[o], label=f'FMNIST vs {o}')
                 if cifar10_performance[o]:
-                    print(cifar10_performance[o])
                     plt.plot(x, cifar10_performance[o], label=f'Cifar10 vs {o}')
-                if svhn_performance[o]:
-                    print(svhn_performance[o])
-                    plt.plot(x, svhn_performance[o], label=f'SVHN vs {o}')
+                if gtsrb_performance[o]:
+                    plt.plot(x, gtsrb_performance[o], label=f'GTSRB vs {o}')
             plt.legend(loc='lower right')
             # plt.tick_params(labelsize=15)
             # plt.ylim(0.7, 1)
@@ -211,7 +214,7 @@ if __name__ == "__main__":
             plt.show()
             exit()
 
-        rate = [x for x in range(1, 3)]
+        rate = [x for x in range(1, 101)]
 
         id_dataset = 'mnist'
         model_path = './models/lenet_mnist/'
@@ -330,7 +333,7 @@ if __name__ == "__main__":
 
                 ood_performance[ood].append(auc)
 
-        ood_performance_file = open(f'./data/{id_dataset}/selection_ratio_adversarial.pkl', 'wb')
+        ood_performance_file = open(f'./data/{id_dataset}/selection_ratio_ood.pkl', 'wb')
         pickle.dump(ood_performance, ood_performance_file)
         ood_performance_file.close()
 

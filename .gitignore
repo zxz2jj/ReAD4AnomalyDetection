@@ -178,5 +178,6 @@ ReAD_cnn/data/gtsrb/
 ReAD_cnn/data/svhn/
 ReAD_cnn/data/public/
 
+ReAD_swin_transformer/data/mnist/
 
 
