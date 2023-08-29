@@ -168,7 +168,12 @@ ReAD_cnn/models/lenet_fmnist/
 ReAD_cnn/models/vgg19_cifar10/
 ReAD_cnn/models/vgg19_gtsrb/
 ReAD_cnn/models/resnet18_svhn/
-
+*.bin
+ReAD_swin_transformer/models/pretrained_model/
+ReAD_swin_transformer/models/swin-finetuned-mnist/
+ReAD_swin_transformer/models/swin-finetuned-fashion_mnist/
+ReAD_swin_transformer/models/swin-finetuned-cifar10/
+ReAD_swin_transformer/models/swin-finetuned-gtsrb/
 
 # data
 ReAD_cnn/data/mnist/
@@ -179,5 +184,9 @@ ReAD_cnn/data/svhn/
 ReAD_cnn/data/public/
 
 ReAD_swin_transformer/data/mnist/
+ReAD_swin_transformer/data/fashion_mnist/
+ReAD_swin_transformer/data/cifar10/
+ReAD_swin_transformer/data/gtsrb/
+ReAD_swin_transformer/data/public/
 
 
