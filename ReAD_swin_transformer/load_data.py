@@ -1,4 +1,4 @@
-from datasets import Dataset, DatasetDict
+from datasets import load_dataset, Dataset, DatasetDict
 import os
 from PIL import Image
 import glob
@@ -7,22 +7,27 @@ import numpy as np
 import re
 
 
-def load_data(dataset):
-    if dataset == 'omniglot':
+def load_ood_data(ood_dataset):
+    if ood_dataset == 'MNIST':
+        data = load_dataset('./data/mnist/')
+        data = Dataset.from_dict({'image': data['test']['image']})
+    elif ood_dataset == 'FMNIST':
+        data = load_dataset('./data/fashion_mnist/')
+        data = Dataset.from_dict({'image': data['test']['image']})
+    elif ood_dataset == 'Omniglot':
         data = load_omniglot()
-    elif dataset == 'tiny_imagenet':
+    elif ood_dataset == 'TinyImageNet':
         data = load_tiny_imagenet()
-    elif dataset == 'isun':
+    elif ood_dataset == 'iSUN':
         data = load_isun()
-    elif dataset == 'lsun':
+    elif ood_dataset == 'LSUN':
         data = load_lsun()
-    elif dataset == 'gtsrb':
-        data = load_gtsrb()
-    elif dataset == 'uniform_noise':
+    elif ood_dataset == 'UniformNoise':
         data = load_uniform_noise()
-    elif dataset == 'gaussian_noise':
+    elif ood_dataset == 'GuassianNoise':
         data = load_gaussian_noise()
     else:
+        print(f'No OOD dataset named {ood_dataset}!')
         data = None
 
     return data
@@ -46,7 +51,7 @@ def load_omniglot():
 
 
 def load_uniform_noise():
-    data_dir = './data/public/uniform_noise'
+    data_dir = './data/public/UniformNoise'
     data = []
     for image in os.listdir(data_dir):
         img_path = os.path.join(data_dir, image)
@@ -59,7 +64,7 @@ def load_uniform_noise():
 
 
 def load_gaussian_noise():
-    data_dir = './data/public/gaussian_noise'
+    data_dir = './data/public/GuassianNoise'
     data = []
     for image in os.listdir(data_dir):
         img_path = os.path.join(data_dir, image)

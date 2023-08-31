@@ -1,44 +1,60 @@
 import pickle
 import os
 import pandas as pd
-import seaborn as sns
+# import seaborn as sns
 import matplotlib.pyplot as plt
 import tensorflow as tf
+from datasets import load_dataset, Dataset
 
-from train_models import train_model
-from load_data import load_mnist, load_fmnist, load_cifar10, load_gtsrb, load_svhn, load_clean_adv_data, load_ood_data
-from ReAD import classify_id_pictures, get_neural_value, statistic_of_neural_value, encode_abstraction, \
-    concatenate_data_between_layers, k_means, statistic_distance, auroc, sk_auc
+from train_swin_models import train_models
+from load_data import load_gtsrb, load_ood_data
+from ReAD import get_neural_value, statistic_of_neural_value, \
+    encode_abstraction, concatenate_data_between_layers, k_means, statistic_distance, auroc, sk_auc
 from ReAD import t_sne_visualization
-from global_config import num_of_labels, selective_rate, cnn_config
+from global_config import num_of_labels, selective_rate, swin_config
 
 
 if __name__ == "__main__":
 
     id_dataset = 'mnist'
-    model_path = './models/lenet_mnist/'
-    detector_path = './data/mnist/detector/'
-    x_train, y_train, x_test, y_test = load_mnist()
-
     # id_dataset = 'fmnist'
-    # model_path = './models/lenet_fmnist/'
-    # detector_path = './data/fmnist/detector/'
-    # x_train, y_train, x_test, y_test = load_fmnist()
-
     # id_dataset = 'cifar10'
-    # model_path = './models/vgg19_cifar10/'
-    # detector_path = './data/cifar10/detector/'
-    # x_train, y_train, x_test, y_test = load_cifar10()
-
     # id_dataset = 'gtsrb'
-    # model_path = './models/vgg19_gtsrb/'
-    # detector_path = './data/gtsrb/detector/'
-    # x_train, y_train, x_test, y_test = load_gtsrb()
 
-    # train models. If model is existed, it will show the information of model
-    show_model = False
-    if show_model:
-        train_model(id_dataset=id_dataset, model_save_path=model_path)
+
+
+    if id_dataset == 'mnist':
+        row_names = ('image', 'label')
+        finetuned_checkpoint = "./models/swin-finetuned-mnist/best"
+        dataset = load_dataset("./data/mnist/")
+        detector_path = './data/mnist/detector/'
+
+    elif id_dataset == 'fashion_mnist':
+        row_names = ('image', 'label')
+        finetuned_checkpoint = "./models/swin-finetuned-fashion_mnist/best"
+        dataset = load_dataset("./data/fashion_mnist/")
+        detector_path = './data/fmnist/detector/'
+
+    elif id_dataset == 'cifar10':
+        row_names = ('img', 'label')
+        finetuned_checkpoint = "./models/swin-finetuned-cifar10/best"
+        dataset = load_dataset("./data/cifar10/")
+        detector_path = './data/cifar10/detector/'
+
+    elif id_dataset == 'gtsrb':
+        row_names = ('image', 'label')
+        finetuned_checkpoint = "./models/swin-finetuned-gtsrb/best"
+        dataset = load_gtsrb()
+        detector_path = './data/gtsrb/detector/'
+
+    else:
+        print('dataset is not exist.')
+        exit()
+
+    rename_train_data = Dataset.from_dict({'image': dataset['train'][row_names[0]],
+                                           'label': dataset['train'][row_names[1]]})
+    rename_test_data = Dataset.from_dict({'image': dataset['test'][row_names[0]],
+                                          'label': dataset['test'][row_names[1]]})
 
     train_nv_statistic = None
     k_means_centers = None
@@ -61,13 +77,9 @@ if __name__ == "__main__":
             os.mkdir(detector_path)
         # ********************** Train Detector **************************** #
         print('\n********************** Train Detector ****************************')
-        train_picture_classified = classify_id_pictures(id_dataset=id_dataset, dataset=x_train,
-                                                        labels=tf.argmax(y_train, axis=1), model_path=model_path)
-
         print('\nGet neural value of train dataset:')
-        train_picture_neural_value = get_neural_value(id_dataset=id_dataset, model_path=model_path,
-                                                      pictures_classified=train_picture_classified)
-
+        train_picture_neural_value = get_neural_value(id_dataset=id_dataset, dataset=rename_train_data,
+                                                      checkpoint=finetuned_checkpoint, is_ood=False)
         print('\nStatistic of train data neural value:')
         train_nv_statistic = statistic_of_neural_value(id_dataset=id_dataset,
                                                        neural_value=train_picture_neural_value)
@@ -106,13 +118,10 @@ if __name__ == "__main__":
 
     # ********************** Evaluate OOD Detection **************************** #
     print('\n********************** Evaluate OOD Detection ****************************')
-    test_picture_classified = classify_id_pictures(id_dataset=id_dataset, dataset=x_test,
-                                                   labels=tf.argmax(y_test, axis=1), model_path=model_path)
     print('\nGet neural value of test dataset:')
-    test_picture_neural_value = get_neural_value(id_dataset=id_dataset, model_path=model_path,
-                                                 pictures_classified=test_picture_classified)
+    test_picture_neural_value = get_neural_value(id_dataset=id_dataset, dataset=rename_test_data,
+                                                 checkpoint=finetuned_checkpoint, is_ood=False)
     print('\nEncoding ReAD abstraction of test dataset:')
-    print("selective rate: {}".format(selective_rate))
     test_ReAD_abstractions = encode_abstraction(id_dataset=id_dataset, neural_value=test_picture_neural_value,
                                                 train_dataset_statistic=train_nv_statistic)
     test_ReAD_concatenated = concatenate_data_between_layers(id_dataset=id_dataset, data_dict=test_ReAD_abstractions)
@@ -120,16 +129,15 @@ if __name__ == "__main__":
     test_distance = statistic_distance(id_dataset=id_dataset, abstractions=test_ReAD_concatenated,
                                        cluster_centers=k_means_centers)
 
-    OOD_dataset = cnn_config[id_dataset]['ood_settings']
+    OOD_dataset = swin_config[id_dataset]['ood_settings']
     for ood in OOD_dataset:
         print('\n************Evaluating*************')
         print(f'In-Distribution Data: {id_dataset}, Out-of-Distribution Data: {ood}.')
-        ood_data, number_of_ood = load_ood_data(ood_dataset=ood, id_model_path=model_path,
-                                                num_of_categories=num_of_labels[id_dataset])
-
+        ood_data = load_ood_data(ood_dataset=ood)
         print('\nGet neural value of ood dataset...')
-        ood_picture_neural_value = get_neural_value(id_dataset=id_dataset, model_path=model_path,
-                                                    pictures_classified=ood_data)
+        ood_picture_neural_value = get_neural_value(id_dataset=id_dataset, dataset=ood_data,
+                                                    checkpoint=finetuned_checkpoint,
+                                                    is_ood=True)
         print('\nEncoding ReAD abstraction of ood dataset...')
         ood_ReAD_abstractions = encode_abstraction(id_dataset=id_dataset, neural_value=ood_picture_neural_value,
                                                    train_dataset_statistic=train_nv_statistic)

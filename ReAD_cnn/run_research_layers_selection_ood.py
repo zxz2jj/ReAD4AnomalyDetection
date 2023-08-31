@@ -450,9 +450,8 @@ if __name__ == "__main__":
             print('\n********************** Train Detector ****************************')
             print("Research Layers:", current_research_layers)
 
-            train_picture_classified = classify_id_pictures(dataset=x_train, labels=tf.argmax(y_train, axis=1),
-                                                            model_path=model_path,
-                                                            num_of_labels=num_of_labels[id_dataset_name])
+            train_picture_classified = classify_id_pictures(id_dataset=id_dataset_name, dataset=x_train,
+                                                            labels=tf.argmax(y_train, axis=1), model_path=model_path)
 
             print('\nGet neural value of train dataset...')
             train_picture_neural_value = get_neural_value(id_dataset=id_dataset_name,
@@ -483,9 +482,8 @@ if __name__ == "__main__":
 
             # ********************** Evaluate OOD Detection **************************** #
             print('\n********************** Evaluate OOD Detection ****************************')
-            test_picture_classified = classify_id_pictures(dataset=x_test, labels=tf.argmax(y_test, axis=1),
-                                                           model_path=model_path,
-                                                           num_of_labels=num_of_labels[id_dataset_name])
+            test_picture_classified = classify_id_pictures(id_dataset=id_dataset_name, dataset=x_test,
+                                                           labels=tf.argmax(y_test, axis=1), model_path=model_path)
             print('\nGet neural value of test dataset:')
             test_picture_neural_value = get_neural_value(id_dataset=id_dataset_name,
                                                          layers=current_research_layers,
@@ -605,9 +603,8 @@ if __name__ == "__main__":
             print('\n********************** Train Detector ****************************')
             print("Research Layers:", current_research_layers)
 
-            train_picture_classified = classify_id_pictures(dataset=x_train, labels=tf.argmax(y_train, axis=1),
-                                                            model_path=model_path,
-                                                            num_of_labels=num_of_labels[id_dataset_name])
+            train_picture_classified = classify_id_pictures(id_dataset=id_dataset_name, dataset=x_train,
+                                                            labels=tf.argmax(y_train, axis=1), model_path=model_path)
 
             print('\nGet neural value of train dataset...')
             train_picture_neural_value = get_neural_value(id_dataset=id_dataset_name,
@@ -638,9 +635,8 @@ if __name__ == "__main__":
 
             # ********************** Evaluate OOD Detection **************************** #
             print('\n********************** Evaluate OOD Detection ****************************')
-            test_picture_classified = classify_id_pictures(dataset=x_test, labels=tf.argmax(y_test, axis=1),
-                                                           model_path=model_path,
-                                                           num_of_labels=num_of_labels[id_dataset_name])
+            test_picture_classified = classify_id_pictures(id_dataset=id_dataset_name, dataset=x_test,
+                                                           labels=tf.argmax(y_test, axis=1), model_path=model_path)
             print('\nGet neural value of test dataset:')
             test_picture_neural_value = get_neural_value(id_dataset=id_dataset_name,
                                                          layers=current_research_layers,

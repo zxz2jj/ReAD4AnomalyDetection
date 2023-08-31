@@ -160,8 +160,8 @@ if __name__ == '__main__':
     x_train, y_train, x_test, y_test = load_mnist()
 
     if not os.path.exists(f'./data/{dataset}/layer_-6_topk_neurons.pkl'):
-        train_picture_classified = classify_id_pictures(dataset=x_train, labels=tf.argmax(y_train, axis=1),
-                                                        model_path=model_path, num_of_labels=num_of_labels[dataset])
+        train_picture_classified = classify_id_pictures(id_dataset=dataset, dataset=x_train,
+                                                        labels=tf.argmax(y_train, axis=1), model_path=model_path)
         print('\nGet neural value of train dataset:')
         train_picture_neural_value = get_neural_value(id_dataset=dataset, model_path=model_path,
                                                       pictures_classified=train_picture_classified)

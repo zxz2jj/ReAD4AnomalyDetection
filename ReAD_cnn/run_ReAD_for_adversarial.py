@@ -53,8 +53,8 @@ if __name__ == "__main__":
     else:
         # ********************** Train Detector **************************** #
         print('\n********************** Train Detector ****************************')
-        train_picture_classified = classify_id_pictures(dataset=x_train, labels=tf.argmax(y_train, axis=1),
-                                                        model_path=model_path, num_of_labels=num_of_labels[clean_dataset])
+        train_picture_classified = classify_id_pictures(id_dataset=clean_dataset, dataset=x_train,
+                                                        labels=tf.argmax(y_train, axis=1), model_path=model_path)
 
         print('\nGet neural value of train dataset:')
         train_picture_neural_value = get_neural_value(id_dataset=clean_dataset, model_path=model_path,

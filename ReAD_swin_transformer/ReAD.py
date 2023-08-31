@@ -1,88 +1,89 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import math
-import tensorflow as tf
+import torch
 from sklearn.cluster import KMeans
 from sklearn import metrics
 from sklearn.metrics import auc, roc_curve
 from sklearn.manifold import TSNE
+from torch.utils.data import Subset
 
-from global_config import num_of_labels, cnn_config
+from global_config import num_of_labels, swin_config
 import global_config
+from model_swin_transformer import SwinForImageClassification
+from train_swin_models import image_tokenizer
 
 
-def classify_id_pictures(id_dataset, dataset, labels, model_path):
-    """
-    divide the in-distribution dataset into correct predictions and wrong predictions.
-    :return:
-    """
+def get_neural_value(id_dataset, dataset, checkpoint, is_ood=False):
+    model = SwinForImageClassification.from_pretrained(
+        checkpoint,
+        output_hidden_states=False,
+        ignore_mismatched_sizes=True,
+    )
 
-    model = tf.keras.models.load_model(model_path+'tf_model.h5')
+    dataset = image_tokenizer(data=dataset, model_checkpoint=checkpoint, mode='test')
+    dataset = Subset(dataset, range(0, dataset.shape[0])).__getitem__([_ for _ in range(dataset.shape[0])])
+    # dataset = Subset(dataset, range(0, 50)).__getitem__([_ for _ in range(50)])
 
-    print("\nclassify training dataset:")
-    picture_classified = {}
-    for category in range(num_of_labels[id_dataset]):
-        pictures_of_category = dataset[labels == category]
-        prediction = np.argmax(model.predict(pictures_of_category), axis=1)
-        correct_number = np.sum(prediction == category)
-        wrong_number = np.sum(prediction != category)
-
-        correct_pictures = pictures_of_category[prediction == category]
-        wrong_pictures = pictures_of_category[prediction != category]
-        correct_prediction = prediction[prediction == category]
-        wrong_prediction = prediction[prediction != category]
-
-        if correct_pictures.shape[0] == 0:
-            correct_pictures = None
-            correct_prediction = None
-        if wrong_pictures.shape[0] == 0:
-            wrong_pictures = None
-            wrong_prediction = None
-        temp_dict = {'correct_pictures': correct_pictures, 'correct_prediction': correct_prediction,
-                     'wrong_pictures': wrong_pictures, 'wrong_prediction': wrong_prediction}
-        picture_classified[category] = temp_dict
-        print('category {}: {} correct predictions, {} wrong predictions.'.format(category, correct_number,
-                                                                                  wrong_number))
-    return picture_classified
-
-
-def get_neural_value(id_dataset, model_path, pictures_classified):
-
-    model = tf.keras.models.load_model(model_path+'tf_model.h5')
-    layers = cnn_config[id_dataset]['layers_of_getting_value']
+    layers = swin_config[id_dataset]['layers_of_getting_value']
 
     neural_value_dict = {}
     for layer in layers:
-        print('\nget neural value in layer: {}'.format(layer))
-        get_layer_output = tf.keras.backend.function(inputs=model.layers[0].input, outputs=model.layers[layer].output)
-        neural_value_layer_dict = {}
+        neural_value_category = {}
         for category in range(num_of_labels[id_dataset]):
-            print('\rcategory: {} / {}'.format(category+1, num_of_labels[id_dataset]), end='')
-            neural_value_category = {}
-            correct_pictures = pictures_classified[category]['correct_pictures']
-            wrong_pictures = pictures_classified[category]['wrong_pictures']
-            if correct_pictures is not None:
-                correct_pictures_layer_output = get_layer_output([correct_pictures])
-                neural_value_category['correct_pictures'] = correct_pictures_layer_output
-                neural_value_category['correct_prediction'] = pictures_classified[category]['correct_prediction']
+            neural_value_category[category] = {'correct_pictures': [], 'correct_predictions': [],
+                                               'wrong_pictures': [], 'wrong_predictions': []}
+        neural_value_dict[layer] = neural_value_category
+
+    neural_value_list = list()
+    predictions_list = list()
+    # model.cuda()
+    for i, batch in zip(range(len(dataset['pixel_values'])), dataset['pixel_values']):
+        # torch.cuda.empty_cache()
+        print('\rImage: {} / {}'.format(i + 1, len(dataset['pixel_values'])), end='')
+        outputs = model(torch.unsqueeze(batch, 0))
+        prediction = torch.argmax(outputs.logits, 1)
+        neural_value_list.append(model.get_pooled_output().cpu().detach().numpy())
+        predictions_list.append(prediction)
+
+    for layer in layers:
+        print('\nget neural value in layer: {}'.format(layer))
+        if not is_ood:
+            labels = dataset['label']
+            for nv, prediction, label in zip(neural_value_list, predictions_list, labels):
+                if prediction == label:
+                    neural_value_dict[layer][int(prediction)]['correct_pictures'].append(nv)
+                    neural_value_dict[layer][int(prediction)]['correct_predictions'].append(prediction)
+                else:
+                    neural_value_dict[layer][int(prediction)]['wrong_pictures'].append(nv)
+                    neural_value_dict[layer][int(prediction)]['wrong_predictions'].append(prediction)
+        elif is_ood:
+            for nv, prediction in zip(neural_value_list, predictions_list):
+                neural_value_dict[layer][int(prediction)]['wrong_pictures'].append(nv)
+                neural_value_dict[layer][int(prediction)]['wrong_predictions'].append(prediction)
+
+    result_dict = {}
+    for layer in layers:
+        result_dict[layer] = {}
+        for category in range(num_of_labels[id_dataset]):
+            result_dict[layer][category] = {}
+            number_of_correct = neural_value_dict[layer][category]['correct_pictures'].__len__()
+            number_of_wrong = neural_value_dict[layer][category]['wrong_pictures'].__len__()
+            print(f'category {category}: {number_of_correct} correct predictions, {number_of_wrong} wrong predictions.')
+            if number_of_correct != 0:
+                result_dict[layer][category]['correct_pictures'] = np.concatenate(neural_value_dict[layer][category]['correct_pictures'])
+                result_dict[layer][category]['correct_predictions'] = np.concatenate(neural_value_dict[layer][category]['correct_predictions'])
             else:
-                neural_value_category['correct_pictures'] = None
-                neural_value_category['correct_prediction'] = None
-
-            if wrong_pictures is not None:
-                # neural_value_category['wrong_pictures'] = None
-                # neural_value_category['wrong_prediction'] = None
-                wrong_pictures_layer_output = get_layer_output([wrong_pictures])
-                neural_value_category['wrong_pictures'] = wrong_pictures_layer_output
-                neural_value_category['wrong_prediction'] = pictures_classified[category]['wrong_prediction']
+                result_dict[layer][category]['correct_pictures'] = np.array([])
+                result_dict[layer][category]['correct_predictions'] = np.array([])
+            if number_of_wrong != 0:
+                result_dict[layer][category]['wrong_pictures'] = np.concatenate(neural_value_dict[layer][category]['wrong_pictures'])
+                result_dict[layer][category]['wrong_predictions'] = np.concatenate(neural_value_dict[layer][category]['wrong_predictions'])
             else:
-                neural_value_category['wrong_pictures'] = None
-                neural_value_category['wrong_prediction'] = None
+                result_dict[layer][category]['wrong_pictures'] = np.array([])
+                result_dict[layer][category]['wrong_predictions'] = np.array([])
 
-            neural_value_layer_dict[category] = neural_value_category
-        neural_value_dict[layer] = neural_value_layer_dict
-
-    return neural_value_dict
+    return result_dict
 
 
 def statistic_of_neural_value(id_dataset, neural_value):
@@ -93,8 +94,8 @@ def statistic_of_neural_value(id_dataset, neural_value):
     :return: non_class_l_average[] all_class_average
     """
 
-    layers = cnn_config[id_dataset]['layers_of_getting_value']
-    neuron_number_of_each_layer = cnn_config[id_dataset]['neurons_of_each_layer']
+    layers = swin_config[id_dataset]['layers_of_getting_value']
+    neuron_number_of_each_layer = swin_config[id_dataset]['neurons_of_each_layer']
     number_of_classes = num_of_labels[id_dataset]
 
     neural_value_statistic = {}
@@ -167,8 +168,8 @@ def encode_abstraction(id_dataset, neural_value, train_dataset_statistic):
     # --------------------------selective  = [ output - average(-l) ] / average(all)------------------------# #
     # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-    layers = cnn_config[id_dataset]['layers_of_getting_value']
-    neuron_number_list = cnn_config[id_dataset]['neurons_of_each_layer']
+    layers = swin_config[id_dataset]['layers_of_getting_value']
+    neuron_number_list = swin_config[id_dataset]['neurons_of_each_layer']
     encode_layer_number = len(layers)
     print(f'selective rate: {global_config.selective_rate}')
     abstractions_dict = {}
@@ -183,32 +184,28 @@ def encode_abstraction(id_dataset, neural_value, train_dataset_statistic):
             neural_value_category = neural_value[layers[k]][category]
             correct_abstraction_list = []
             wrong_abstraction_list = []
-            if neural_value_category['correct_pictures'] is not None:
-                if neural_value_category['correct_pictures'].shape[0] == 0:
-                    wrong_abstraction_list = []
-                else:
-                    for image, label in \
-                            zip(neural_value_category['correct_pictures'], neural_value_category['correct_prediction']):
-                        combination = encode_by_selective(image, label, global_config.selective_rate, neuron_number_list[k], non_class_l_avg, all_class_avg)
-                        correct_abstraction_list.append(combination)
-            else:
-                correct_abstraction_list = None
 
-            if neural_value_category['wrong_pictures'] is not None:
-                if neural_value_category['wrong_pictures'].shape[0] == 0:
-                    wrong_abstraction_list = []
-                else:
-                    for image, label in \
-                            zip(neural_value_category['wrong_pictures'],  neural_value_category['wrong_prediction']):
-                        combination = encode_by_selective(image, label, global_config.selective_rate, neuron_number_list[k], non_class_l_avg, all_class_avg)
-                        wrong_abstraction_list.append(combination)
+            if neural_value_category['correct_pictures'].shape[0] == 0:
+                correct_abstraction_list = []
             else:
-                wrong_abstraction_list = None
+                for image, label in \
+                        zip(neural_value_category['correct_pictures'], neural_value_category['correct_predictions']):
+                    combination = encode_by_selective(image, label, global_config.selective_rate, neuron_number_list[k], non_class_l_avg, all_class_avg)
+                    correct_abstraction_list.append(combination)
+
+            if neural_value_category['wrong_pictures'].shape[0] == 0:
+                wrong_abstraction_list = []
+            else:
+                for image, label in \
+                        zip(neural_value_category['wrong_pictures'],  neural_value_category['wrong_predictions']):
+                    combination = encode_by_selective(image, label, global_config.selective_rate, neuron_number_list[k], non_class_l_avg, all_class_avg)
+                    wrong_abstraction_list.append(combination)
+
 
             combination_abstraction = {'correct_pictures': correct_abstraction_list,
-                                       'correct_prediction': neural_value_category['correct_prediction'],
+                                       'correct_predictions': neural_value_category['correct_predictions'],
                                        'wrong_pictures': wrong_abstraction_list,
-                                       'wrong_prediction': neural_value_category['wrong_prediction']}
+                                       'wrong_predictions': neural_value_category['wrong_predictions']}
             combination_abstraction_each_category[category] = combination_abstraction
 
         abstractions_dict[layers[k]] = combination_abstraction_each_category
@@ -218,36 +215,29 @@ def encode_abstraction(id_dataset, neural_value, train_dataset_statistic):
 
 
 def concatenate_data_between_layers(id_dataset, data_dict):
-    layers = cnn_config[id_dataset]['layers_of_getting_value']
+    layers = swin_config[id_dataset]['layers_of_getting_value']
     abstraction_concatenated_dict = {}
     for category in range(num_of_labels[id_dataset]):
         correct_data = []
-        if data_dict[layers[0]][category]['correct_pictures'] is not None:
+        if data_dict[layers[0]][category]['correct_pictures']:
             for k in range(len(layers)):
                 correct_data.append(data_dict[layers[k]][category]['correct_pictures'])
             correct_data = np.concatenate(correct_data, axis=1)
         else:
-            correct_data = None
+            correct_data = np.array([])
 
         wrong_data = []
-        if data_dict[layers[0]][category]['wrong_pictures'] is not None:
-            empty_flag = False
+        if data_dict[layers[0]][category]['wrong_pictures']:
             for k in range(len(layers)):
-                if not data_dict[layers[k]][category]['wrong_pictures']:
-                    empty_flag = True
-                    break
                 wrong_data.append(data_dict[layers[k]][category]['wrong_pictures'])
-            if empty_flag:
-                wrong_data = np.array([])
-            else:
-                wrong_data = np.concatenate(wrong_data, axis=1)
+            wrong_data = np.concatenate(wrong_data, axis=1)
         else:
-            wrong_data = None
+            wrong_data = np.array([])
 
         concatenate_data = {'correct_pictures': correct_data,
-                            'correct_prediction': data_dict[layers[0]][category]['correct_prediction'],
+                            'correct_predictions': data_dict[layers[0]][category]['correct_predictions'],
                             'wrong_pictures': wrong_data,
-                            'wrong_prediction': data_dict[layers[0]][category]['wrong_prediction']}
+                            'wrong_predictions': data_dict[layers[0]][category]['wrong_predictions']}
 
         abstraction_concatenated_dict[category] = concatenate_data
 
@@ -301,43 +291,43 @@ def statistic_distance(id_dataset, abstractions, cluster_centers):
         distance_category = {}
         if abstraction_category['correct_pictures'] is not None:
             correct_distance = []
-            abstraction_length = sum(cnn_config[id_dataset]['neurons_of_each_layer'])
+            abstraction_length = sum(swin_config[id_dataset]['neurons_of_each_layer'])
             if abstraction_category['correct_pictures'].shape[0] == 0:
                 distance_category['correct_pictures'] = correct_distance
-                distance_category['correct_prediction'] = abstraction_category['correct_prediction']
+                distance_category['correct_predictions'] = abstraction_category['correct_predictions']
             else:
                 for abstraction, prediction in zip(abstraction_category['correct_pictures'],
-                                                   abstraction_category['correct_prediction']):
+                                                   abstraction_category['correct_predictions']):
                     distance = 0.0
                     for k in range(abstraction_length):
                         distance += pow(abstraction[k] - cluster_centers[prediction][k], 2)
                     correct_distance.append(distance ** 0.5)
                 distance_category['correct_pictures'] = correct_distance
-                distance_category['correct_prediction'] = abstraction_category['correct_prediction']
+                distance_category['correct_predictions'] = abstraction_category['correct_predictions']
 
         else:
             distance_category['correct_pictures'] = []
-            distance_category['correct_prediction'] = []
+            distance_category['correct_predictions'] = []
 
         if abstraction_category['wrong_pictures'] is not None:
             wrong_distance = []
-            abstraction_length = sum(cnn_config[id_dataset]['neurons_of_each_layer'])
+            abstraction_length = sum(swin_config[id_dataset]['neurons_of_each_layer'])
             if abstraction_category['wrong_pictures'].shape[0] == 0:
                 distance_category['wrong_pictures'] = wrong_distance
-                distance_category['wrong_prediction'] = abstraction_category['wrong_prediction']
+                distance_category['wrong_predictions'] = abstraction_category['wrong_predictions']
             else:
                 for abstraction, prediction in zip(abstraction_category['wrong_pictures'],
-                                                   abstraction_category['wrong_prediction']):
+                                                   abstraction_category['wrong_predictions']):
                     distance = 0.0
                     for k in range(abstraction_length):
                         distance += pow(abstraction[k] - cluster_centers[prediction][k], 2)
                     wrong_distance.append(distance ** 0.5)
                 distance_category['wrong_pictures'] = wrong_distance
-                distance_category['wrong_prediction'] = abstraction_category['wrong_prediction']
+                distance_category['wrong_predictions'] = abstraction_category['wrong_predictions']
 
         else:
             distance_category['wrong_pictures'] = []
-            distance_category['wrong_prediction'] = []
+            distance_category['wrong_predictions'] = []
 
         euclidean_distance[category] = distance_category
 
@@ -364,7 +354,7 @@ def tp_fn_tn_fp(distance_of_train_data, percentile_of_confidence_boundary, dista
                 pass
             else:
                 for distance, prediction in zip(distance_of_test_data[category]['correct_pictures'],
-                                                distance_of_test_data[category]['correct_prediction']):
+                                                distance_of_test_data[category]['correct_predictions']):
                     if distance > confidence_boundary[prediction]:
                         fp += 1
                     else:
@@ -375,7 +365,7 @@ def tp_fn_tn_fp(distance_of_train_data, percentile_of_confidence_boundary, dista
                 pass
             else:
                 for distance, prediction in zip(distance_of_test_data[category]['wrong_pictures'],
-                                                distance_of_test_data[category]['wrong_prediction']):
+                                                distance_of_test_data[category]['wrong_predictions']):
                     if distance > confidence_boundary[prediction]:
                         tp += 1
                     else:
