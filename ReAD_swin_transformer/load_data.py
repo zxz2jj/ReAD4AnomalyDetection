@@ -34,7 +34,7 @@ def load_ood_data(ood_dataset):
 
 
 def load_omniglot():
-    data_dir = './data/public/omniglot/images_evaluation'
+    data_dir = './data/public/Omniglot/images_evaluation'
     data = []
     for alphabet in os.listdir(data_dir):
         alphabet_path = os.path.join(data_dir, alphabet)
@@ -77,7 +77,7 @@ def load_gaussian_noise():
 
 
 def load_tiny_imagenet():
-    data_dir = './data/public/tiny_imagenet/test/images/'
+    data_dir = './data/public/TinyImageNet/test/images/'
     data = []
     for image in os.listdir(data_dir):
         img_path = os.path.join(data_dir, image)
@@ -90,7 +90,7 @@ def load_tiny_imagenet():
 
 
 def load_isun():
-    data_dir = './data/public/isun'
+    data_dir = './data/public/iSUN'
     data = []
     for image in os.listdir(data_dir):
         img_path = os.path.join(data_dir, image)
@@ -103,7 +103,7 @@ def load_isun():
 
 
 def load_lsun():
-    data_dir = './data/public/lsun'
+    data_dir = './data/public/LSUN'
     data = []
     for image in os.listdir(data_dir):
         img_path = os.path.join(data_dir, image)

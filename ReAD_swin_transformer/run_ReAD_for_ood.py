@@ -3,24 +3,21 @@ import os
 import pandas as pd
 # import seaborn as sns
 import matplotlib.pyplot as plt
-import tensorflow as tf
 from datasets import load_dataset, Dataset
 
-from train_swin_models import train_models
 from load_data import load_gtsrb, load_ood_data
 from ReAD import get_neural_value, statistic_of_neural_value, \
     encode_abstraction, concatenate_data_between_layers, k_means, statistic_distance, auroc, sk_auc
 from ReAD import t_sne_visualization
-from global_config import num_of_labels, selective_rate, swin_config
+from global_config import num_of_labels, swin_config
 
 
 if __name__ == "__main__":
 
-    id_dataset = 'mnist'
-    # id_dataset = 'fmnist'
+    # id_dataset = 'mnist'
+    id_dataset = 'fashion_mnist'
     # id_dataset = 'cifar10'
     # id_dataset = 'gtsrb'
-
 
 
     if id_dataset == 'mnist':
@@ -33,7 +30,7 @@ if __name__ == "__main__":
         row_names = ('image', 'label')
         finetuned_checkpoint = "./models/swin-finetuned-fashion_mnist/best"
         dataset = load_dataset("./data/fashion_mnist/")
-        detector_path = './data/fmnist/detector/'
+        detector_path = './data/fashion_mnist/detector/'
 
     elif id_dataset == 'cifar10':
         row_names = ('img', 'label')

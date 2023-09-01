@@ -1,0 +1,197 @@
+(experiment) zhangzhen19@tiger4:~/ReAD_swin_transformer$ python run_ReAD_for_ood.py
+Reusing dataset mnist (/home/zhangzhen19/.cache/huggingface/datasets/mnist/mnist/1.0.0/fda16c03c4ecfb13f165ba7e29cf38129ce035011519968cdaf74894ce91c9d4)
+100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 2/2 [00:00<00:00, 222.60it/s]
+
+Detector is existed!
+
+********************** Evaluate OOD Detection ****************************
+
+Get neural value of test dataset:
+/home/zhangzhen19/miniconda3/envs/experiment/lib/python3.8/site-packages/torch/functional.py:568: UserWarning: torch.meshgrid: in an upcoming release, it will be required to pass the indexing argument. (Triggered internally at  ../aten/src/ATen/native/TensorShape.cpp:2228.)
+  return _VF.meshgrid(tensors, **kwargs)  # type: ignore[attr-defined]
+Image: 10000 / 10000
+get neural value in layer: -2
+category 0: 979 correct predictions, 9 wrong predictions.
+category 1: 1134 correct predictions, 4 wrong predictions.
+category 2: 1013 correct predictions, 31 wrong predictions.
+category 3: 998 correct predictions, 12 wrong predictions.
+category 4: 979 correct predictions, 3 wrong predictions.
+category 5: 863 correct predictions, 19 wrong predictions.
+category 6: 937 correct predictions, 10 wrong predictions.
+category 7: 1021 correct predictions, 8 wrong predictions.
+category 8: 970 correct predictions, 5 wrong predictions.
+category 9: 1001 correct predictions, 4 wrong predictions.
+
+Encoding ReAD abstraction of test dataset:
+selective rate: 0.6
+
+Encoding in fully connected layer:-2.
+category: 10 / 10
+
+
+Calculate distance between abstractions and cluster centers ...
+
+************Evaluating*************
+In-Distribution Data: mnist, Out-of-Distribution Data: FMNIST.
+Reusing dataset fashion_mnist (/home/zhangzhen19/.cache/huggingface/datasets/fashion_mnist/fashion_mnist/1.0.0/8d6c32399aa01613d96e2cbc9b13638f359ef62bb33612b077b4c247f6ef99c1)
+100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 2/2 [00:00<00:00, 210.24it/s]
+
+Get neural value of ood dataset...
+Image: 10000 / 10000
+get neural value in layer: -2
+category 0: 0 correct predictions, 2378 wrong predictions.
+category 1: 0 correct predictions, 2214 wrong predictions.
+category 2: 0 correct predictions, 938 wrong predictions.
+category 3: 0 correct predictions, 58 wrong predictions.
+category 4: 0 correct predictions, 479 wrong predictions.
+category 5: 0 correct predictions, 626 wrong predictions.
+category 6: 0 correct predictions, 78 wrong predictions.
+category 7: 0 correct predictions, 502 wrong predictions.
+category 8: 0 correct predictions, 1712 wrong predictions.
+category 9: 0 correct predictions, 1015 wrong predictions.
+
+Encoding ReAD abstraction of ood dataset...
+selective rate: 0.6
+
+Encoding in fully connected layer:-2.
+category: 10 / 10
+
+
+Calculate distance between abstractions and cluster centers ...
+0/10: AUROC: 0.999936
+1/10: AUROC: 0.996775
+2/10: AUROC: 0.997665
+3/10: AUROC: 0.999568
+4/10: AUROC: 0.999857
+5/10: AUROC: 0.999937
+6/10: AUROC: 0.998180
+7/10: AUROC: 0.999762
+8/10: AUROC: 0.998943
+9/10: AUROC: 0.998381
+
+Performance of Detector:
+AUROC: 0.998900
+*************************************
+
+
+************Evaluating*************
+In-Distribution Data: mnist, Out-of-Distribution Data: Omniglot.
+./data/public/Omniglot/images_evaluation/Tengwar/character25/1555_10.pngpng9_01.png/1425_12.png
+Get neural value of ood dataset...
+Image: 13180 / 13180
+get neural value in layer: -2
+category 0: 0 correct predictions, 2016 wrong predictions.
+category 1: 0 correct predictions, 129 wrong predictions.
+category 2: 0 correct predictions, 243 wrong predictions.
+category 3: 0 correct predictions, 1840 wrong predictions.
+category 4: 0 correct predictions, 293 wrong predictions.
+category 5: 0 correct predictions, 1397 wrong predictions.
+category 6: 0 correct predictions, 2930 wrong predictions.
+category 7: 0 correct predictions, 3391 wrong predictions.
+category 8: 0 correct predictions, 591 wrong predictions.
+category 9: 0 correct predictions, 350 wrong predictions.
+
+Encoding ReAD abstraction of ood dataset...
+selective rate: 0.6
+
+Encoding in fully connected layer:-2.
+category: 10 / 10
+
+
+Calculate distance between abstractions and cluster centers ...
+0/10: AUROC: 0.999748
+1/10: AUROC: 0.994326
+2/10: AUROC: 0.999553
+3/10: AUROC: 0.999351
+4/10: AUROC: 0.999383
+5/10: AUROC: 0.999123
+6/10: AUROC: 0.999713
+7/10: AUROC: 0.998619
+8/10: AUROC: 0.998610
+9/10: AUROC: 0.998647
+
+Performance of Detector:
+AUROC: 0.998707
+*************************************
+
+
+************Evaluating*************
+In-Distribution Data: mnist, Out-of-Distribution Data: UniformNoise.
+./data/public/UniformNoise/5366.jpg
+Get neural value of ood dataset...
+Image: 9607 / 9607
+get neural value in layer: -2
+category 0: 0 correct predictions, 0 wrong predictions.
+category 1: 0 correct predictions, 9607 wrong predictions.
+category 2: 0 correct predictions, 0 wrong predictions.
+category 3: 0 correct predictions, 0 wrong predictions.
+category 4: 0 correct predictions, 0 wrong predictions.
+category 5: 0 correct predictions, 0 wrong predictions.
+category 6: 0 correct predictions, 0 wrong predictions.
+category 7: 0 correct predictions, 0 wrong predictions.
+category 8: 0 correct predictions, 0 wrong predictions.
+category 9: 0 correct predictions, 0 wrong predictions.
+
+Encoding ReAD abstraction of ood dataset...
+selective rate: 0.6
+
+Encoding in fully connected layer:-2.
+category: 10 / 10
+
+
+Calculate distance between abstractions and cluster centers ...
+0/10: AUROC: No examples
+1/10: AUROC: 0.996494
+2/10: AUROC: No examples
+3/10: AUROC: No examples
+4/10: AUROC: No examples
+5/10: AUROC: No examples
+6/10: AUROC: No examples
+7/10: AUROC: No examples
+8/10: AUROC: No examples
+9/10: AUROC: No examples
+
+Performance of Detector:
+AUROC: 0.996494
+*************************************
+
+
+************Evaluating*************
+In-Distribution Data: mnist, Out-of-Distribution Data: GuassianNoise.
+./data/public/GuassianNoise/5366.jpg
+Get neural value of ood dataset...
+Image: 9630 / 9630
+get neural value in layer: -2
+category 0: 0 correct predictions, 0 wrong predictions.
+category 1: 0 correct predictions, 9630 wrong predictions.
+category 2: 0 correct predictions, 0 wrong predictions.
+category 3: 0 correct predictions, 0 wrong predictions.
+category 4: 0 correct predictions, 0 wrong predictions.
+category 5: 0 correct predictions, 0 wrong predictions.
+category 6: 0 correct predictions, 0 wrong predictions.
+category 7: 0 correct predictions, 0 wrong predictions.
+category 8: 0 correct predictions, 0 wrong predictions.
+category 9: 0 correct predictions, 0 wrong predictions.
+
+Encoding ReAD abstraction of ood dataset...
+selective rate: 0.6
+
+Encoding in fully connected layer:-2.
+category: 10 / 10
+
+
+Calculate distance between abstractions and cluster centers ...
+0/10: AUROC: No examples
+1/10: AUROC: 0.996490
+2/10: AUROC: No examples
+3/10: AUROC: No examples
+4/10: AUROC: No examples
+5/10: AUROC: No examples
+6/10: AUROC: No examples
+7/10: AUROC: No examples
+8/10: AUROC: No examples
+9/10: AUROC: No examples
+
+Performance of Detector:
+AUROC: 0.996490
+*************************************
