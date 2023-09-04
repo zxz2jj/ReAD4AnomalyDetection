@@ -1,6 +1,6 @@
 import numpy as np
 from datasets import load_dataset, load_metric, Dataset
-from transformers import AutoFeatureExtractor, TrainingArguments, Trainer
+from transformers import AutoFeatureExtractor, TrainingArguments, Trainer, SwinConfig
 from transformers.trainer_utils import IntervalStrategy
 from torchvision.transforms import (
     CenterCrop,
@@ -15,10 +15,11 @@ from torchvision.transforms import (
 import torch
 import os
 
-from model_swin_transformer import SwinForImageClassification
+from model_swin_transformer import SwinModel, SwinForImageClassification
 from load_data import load_gtsrb
+from global_config import num_of_labels
 
-# os.environ["CUDA_VISIBLE_DEVICES"] = "0, 1, 2, 3"
+os.environ["CUDA_VISIBLE_DEVICES"] = "5"
 
 
 def image_tokenizer(data, model_checkpoint, mode):
@@ -64,18 +65,22 @@ def image_tokenizer(data, model_checkpoint, mode):
     return data
 
 
-def swin_models(model_checkpoint, dataset, train_data, test_data, output_hidden_states=False):
+def swin_models(model_checkpoint, dataset, train_data, test_data, output_hidden_states=False, mode='test'):
 
     metric = load_metric("accuracy")
     batch_size = 32
-
-    model = SwinForImageClassification.from_pretrained(
-        model_checkpoint,
-        output_hidden_states=output_hidden_states,
-        ignore_mismatched_sizes=True,
-    )
+    if mode == 'train':
+        swin_model = SwinModel.from_pretrained(model_checkpoint)
+        config = SwinConfig.from_pretrained(model_checkpoint, num_labels=num_of_labels[dataset],
+                                            output_hidden_states=output_hidden_states, ignore_mismatched_sizes=True,)
+        swin_model_for_classification = SwinForImageClassification(config)
+        swin_model_for_classification.swin = swin_model
+    elif mode == 'test':
+        swin_model_for_classification = SwinForImageClassification.from_pretrained(model_checkpoint)
+    else:
+        print('mode must be train or test.')
+        exit()
     feature_extractor = AutoFeatureExtractor.from_pretrained(model_checkpoint)
-
     print(f'fine tune models on {model_checkpoint} using {dataset} dataset...')
     args = TrainingArguments(
         f"./models/swin-finetuned-{dataset}",
@@ -105,7 +110,7 @@ def swin_models(model_checkpoint, dataset, train_data, test_data, output_hidden_
         return {"pixel_values": pixel_values, "labels": labels}
 
     trainer = Trainer(
-        model,
+        swin_model_for_classification,
         args,
         train_dataset=train_data,
         eval_dataset=test_data,
@@ -159,7 +164,8 @@ def train_models(id_dataset):
                               dataset=id_dataset,
                               train_data=train_dataset,
                               test_data=test_dataset,
-                              output_hidden_states=False)
+                              output_hidden_states=False,
+                              mode='test')
         metrics = trainer.evaluate()
         trainer.log_metrics('eval', metrics)
 
@@ -170,7 +176,8 @@ def train_models(id_dataset):
                               dataset=id_dataset,
                               train_data=train_dataset,
                               test_data=test_dataset,
-                              output_hidden_states=False)
+                              output_hidden_states=False,
+                              mode='train')
         train_results = trainer.train()
         trainer.save_model(f"./models/swin-finetuned-{id_dataset}/best")
         trainer.log_metrics("train", train_results.metrics)

@@ -3,8 +3,7 @@ import os
 from PIL import Image
 import glob
 import pandas as pd
-import numpy as np
-import re
+from sklearn.utils import shuffle
 
 
 def load_ood_data(ood_dataset):
@@ -77,7 +76,7 @@ def load_gaussian_noise():
 
 
 def load_tiny_imagenet():
-    data_dir = './data/public/TinyImageNet/test/images/'
+    data_dir = './data/public/TinyImageNet/tiny-imagenet-200/test/images/'
     data = []
     for image in os.listdir(data_dir):
         img_path = os.path.join(data_dir, image)
@@ -132,6 +131,7 @@ def load_gtsrb():
         y_train.append(label)
         img.close()
     print(f'\nTraining Dataset Length:{x_train.__len__()}')
+    x_train, y_train = shuffle(x_train, y_train)
     train_data = Dataset.from_dict({'image': x_train, 'label': y_train})
 
     test = pd.read_csv('./data/public/GTSRB/Final_Test/Images/GT-final_test.csv', sep=';')
@@ -147,14 +147,11 @@ def load_gtsrb():
         img.close()
 
     print(f'\nTesting Dataset Length:{x_test.__len__()}')
+    x_test, y_test = shuffle(x_test, y_test)
     test_data = Dataset.from_dict({'image': x_test, 'label': y_test})
 
     data = DatasetDict({'train': train_data, 'test': test_data})
 
     return data
 
-
-if __name__ == '__main__':
-
-    d = load_gtsrb()
 

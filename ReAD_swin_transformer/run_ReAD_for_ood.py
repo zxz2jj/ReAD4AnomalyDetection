@@ -14,8 +14,8 @@ from global_config import num_of_labels, swin_config
 
 if __name__ == "__main__":
 
-    # id_dataset = 'mnist'
-    id_dataset = 'fashion_mnist'
+    id_dataset = 'mnist'
+    # id_dataset = 'fashion_mnist'
     # id_dataset = 'cifar10'
     # id_dataset = 'gtsrb'
 

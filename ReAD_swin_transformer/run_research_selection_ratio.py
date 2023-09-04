@@ -4,7 +4,6 @@ import matplotlib.pyplot as plt
 import pickle
 import os
 from datasets import load_dataset, Dataset
-import tensorflow as tf
 from load_data import load_gtsrb, load_ood_data
 from ReAD import statistic_of_neural_value, get_neural_value
 from ReAD import encode_abstraction, concatenate_data_between_layers
@@ -88,8 +87,7 @@ if __name__ == "__main__":
         print(f'Research on Dataset {id_dataset} is done!')
         exit()
     ood_performance = {'FMNIST': [], 'MNIST': [], 'Omniglot': [], 'TinyImageNet': [], 'LSUN': [], 'iSUN': [],
-                       'UniformNoise_28': [], 'GuassianNoise_28': [], 'UniformNoise_32': [], 'GuassianNoise_32': [],
-                       'UniformNoise_48': [], 'GuassianNoise_48': []}
+                       'UniformNoise': [], 'GuassianNoise': []}
     detector_path = f'./data/{id_dataset}/detector/selection_ratio_research/'
     if not os.path.exists(detector_path):
         if not os.path.exists(f'./data/{id_dataset}/detector/'):

@@ -7,6 +7,7 @@ from sklearn import metrics
 from sklearn.metrics import auc, roc_curve
 from sklearn.manifold import TSNE
 from torch.utils.data import Subset
+from transformers import SwinConfig
 
 from global_config import num_of_labels, swin_config
 import global_config
@@ -15,15 +16,13 @@ from train_swin_models import image_tokenizer
 
 
 def get_neural_value(id_dataset, dataset, checkpoint, is_ood=False):
-    model = SwinForImageClassification.from_pretrained(
-        checkpoint,
-        output_hidden_states=False,
-        ignore_mismatched_sizes=True,
-    )
+    config = SwinConfig.from_pretrained(checkpoint, num_labels=num_of_labels[id_dataset],
+                                        output_hidden_states=False, ignore_mismatched_sizes=True)
+    model = SwinForImageClassification.from_pretrained(checkpoint, config=config)
 
     dataset = image_tokenizer(data=dataset, model_checkpoint=checkpoint, mode='test')
     dataset = Subset(dataset, range(0, dataset.shape[0])).__getitem__([_ for _ in range(dataset.shape[0])])
-    # dataset = Subset(dataset, range(0, 50)).__getitem__([_ for _ in range(50)])
+    # dataset = Subset(dataset, range(0, 100)).__getitem__([_ for _ in range(100)])
 
     layers = swin_config[id_dataset]['layers_of_getting_value']
 
