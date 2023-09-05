@@ -12,6 +12,9 @@ from ReAD import sk_auc
 from global_config import num_of_labels, swin_config
 import global_config
 
+os.environ["CUDA_VISIBLE_DEVICES"] = "7"
+os.environ["WANDB_DISABLED"] = "true"
+
 
 if __name__ == "__main__":
 

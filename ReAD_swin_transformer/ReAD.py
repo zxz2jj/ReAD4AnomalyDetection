@@ -36,14 +36,17 @@ def get_neural_value(id_dataset, dataset, checkpoint, is_ood=False):
 
     neural_value_list = list()
     predictions_list = list()
-    # model.cuda()
+
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    model.to(device)
     for i, batch in zip(range(len(dataset['pixel_values'])), dataset['pixel_values']):
-        # torch.cuda.empty_cache()
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
         print('\rImage: {} / {}'.format(i + 1, len(dataset['pixel_values'])), end='')
-        outputs = model(torch.unsqueeze(batch, 0))
+        outputs = model(torch.unsqueeze(batch, 0).to(device))
         prediction = torch.argmax(outputs.logits, 1)
         neural_value_list.append(model.get_pooled_output().cpu().detach().numpy())
-        predictions_list.append(prediction)
+        predictions_list.append(prediction.cpu().detach().numpy())
 
     for layer in layers:
         print('\nget neural value in layer: {}'.format(layer))

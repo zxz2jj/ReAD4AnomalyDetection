@@ -20,6 +20,7 @@ from load_data import load_gtsrb
 from global_config import num_of_labels
 
 os.environ["CUDA_VISIBLE_DEVICES"] = "5"
+os.environ["WANDB_DISABLED"] = "true"
 
 
 def image_tokenizer(data, model_checkpoint, mode):
@@ -187,15 +188,7 @@ if __name__ == '__main__':
 
     # id_data = 'mnist'
     # id_data = 'fashion_mnist'
-    # id_data = 'cifar10'
-    id_data = 'gtsrb'
+    id_data = 'cifar10'
+    # id_data = 'gtsrb'
 
     train_models(id_data)
-
-
-
-
-
-    # sub_eval = Subset(test_dataset, range(0, 100)).__getitem__([_ for _ in range(100)])
-    # output = model(torch.stack(sub_eval['pixel_values']))
-    # print('aaa')

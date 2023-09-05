@@ -1,125 +1,127 @@
-(experiment) zhangzhen19@tiger4:~/ReAD_swin_transformer$ python run_ReAD_for_ood.py
+2023-09-04 05:43:50.651133: W tensorflow/compiler/tf2tensorrt/utils/py_utils.cc:38] TF-TRT Warning: Could not find TensorRT
 Reusing dataset mnist (/home/zhangzhen19/.cache/huggingface/datasets/mnist/mnist/1.0.0/fda16c03c4ecfb13f165ba7e29cf38129ce035011519968cdaf74894ce91c9d4)
-100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 2/2 [00:00<00:00, 222.60it/s]
+
+  0%|          | 0/2 [00:00<?, ?it/s]
+100%|██████████| 2/2 [00:00<00:00, 345.10it/s]
+/home/zhangzhen19/miniconda3/envs/experiment/lib/python3.8/site-packages/torch/functional.py:568: UserWarning: torch.meshgrid: in an upcoming release, it will be required to pass the indexing argument. (Triggered internally at  ../aten/src/ATen/native/TensorShape.cpp:2228.)
+  return _VF.meshgrid(tensors, **kwargs)  # type: ignore[attr-defined]
+Reusing dataset fashion_mnist (/home/zhangzhen19/.cache/huggingface/datasets/fashion_mnist/fashion_mnist/1.0.0/8d6c32399aa01613d96e2cbc9b13638f359ef62bb33612b077b4c247f6ef99c1)
 
 Detector is existed!
 
 ********************** Evaluate OOD Detection ****************************
 
 Get neural value of test dataset:
-/home/zhangzhen19/miniconda3/envs/experiment/lib/python3.8/site-packages/torch/functional.py:568: UserWarning: torch.meshgrid: in an upcoming release, it will be required to pass the indexing argument. (Triggered internally at  ../aten/src/ATen/native/TensorShape.cpp:2228.)
-  return _VF.meshgrid(tensors, **kwargs)  # type: ignore[attr-defined]
-Image: 10000 / 10000
+
 get neural value in layer: -2
-category 0: 979 correct predictions, 9 wrong predictions.
-category 1: 1134 correct predictions, 4 wrong predictions.
-category 2: 1013 correct predictions, 31 wrong predictions.
-category 3: 998 correct predictions, 12 wrong predictions.
-category 4: 979 correct predictions, 3 wrong predictions.
-category 5: 863 correct predictions, 19 wrong predictions.
-category 6: 937 correct predictions, 10 wrong predictions.
-category 7: 1021 correct predictions, 8 wrong predictions.
-category 8: 970 correct predictions, 5 wrong predictions.
-category 9: 1001 correct predictions, 4 wrong predictions.
+category 0: 978 correct predictions, 4 wrong predictions.
+category 1: 1133 correct predictions, 4 wrong predictions.
+category 2: 1016 correct predictions, 25 wrong predictions.
+category 3: 997 correct predictions, 5 wrong predictions.
+category 4: 976 correct predictions, 4 wrong predictions.
+category 5: 870 correct predictions, 17 wrong predictions.
+category 6: 945 correct predictions, 12 wrong predictions.
+category 7: 1023 correct predictions, 7 wrong predictions.
+category 8: 971 correct predictions, 5 wrong predictions.
+category 9: 1002 correct predictions, 6 wrong predictions.
 
 Encoding ReAD abstraction of test dataset:
 selective rate: 0.6
 
 Encoding in fully connected layer:-2.
-category: 10 / 10
-
 
 Calculate distance between abstractions and cluster centers ...
 
 ************Evaluating*************
 In-Distribution Data: mnist, Out-of-Distribution Data: FMNIST.
-Reusing dataset fashion_mnist (/home/zhangzhen19/.cache/huggingface/datasets/fashion_mnist/fashion_mnist/1.0.0/8d6c32399aa01613d96e2cbc9b13638f359ef62bb33612b077b4c247f6ef99c1)
-100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 2/2 [00:00<00:00, 210.24it/s]
 
+  0%|          | 0/2 [00:00<?, ?it/s]
+100%|██████████| 2/2 [00:00<00:00, 524.81it/s]
 Get neural value of ood dataset...
-Image: 10000 / 10000
+
 get neural value in layer: -2
-category 0: 0 correct predictions, 2378 wrong predictions.
-category 1: 0 correct predictions, 2214 wrong predictions.
-category 2: 0 correct predictions, 938 wrong predictions.
-category 3: 0 correct predictions, 58 wrong predictions.
-category 4: 0 correct predictions, 479 wrong predictions.
-category 5: 0 correct predictions, 626 wrong predictions.
+category 0: 0 correct predictions, 1903 wrong predictions.
+category 1: 0 correct predictions, 1645 wrong predictions.
+category 2: 0 correct predictions, 1654 wrong predictions.
+category 3: 0 correct predictions, 123 wrong predictions.
+category 4: 0 correct predictions, 670 wrong predictions.
+category 5: 0 correct predictions, 478 wrong predictions.
 category 6: 0 correct predictions, 78 wrong predictions.
-category 7: 0 correct predictions, 502 wrong predictions.
-category 8: 0 correct predictions, 1712 wrong predictions.
-category 9: 0 correct predictions, 1015 wrong predictions.
+category 7: 0 correct predictions, 385 wrong predictions.
+category 8: 0 correct predictions, 1783 wrong predictions.
+category 9: 0 correct predictions, 1281 wrong predictions.
 
 Encoding ReAD abstraction of ood dataset...
 selective rate: 0.6
 
 Encoding in fully connected layer:-2.
-category: 10 / 10
 
 
 Calculate distance between abstractions and cluster centers ...
-0/10: AUROC: 0.999936
-1/10: AUROC: 0.996775
-2/10: AUROC: 0.997665
-3/10: AUROC: 0.999568
-4/10: AUROC: 0.999857
-5/10: AUROC: 0.999937
-6/10: AUROC: 0.998180
-7/10: AUROC: 0.999762
-8/10: AUROC: 0.998943
-9/10: AUROC: 0.998381
+0/10: AUROC: 0.999590
+1/10: AUROC: 0.997253
+2/10: AUROC: 0.998613
+3/10: AUROC: 0.999878
+4/10: AUROC: 0.999768
+5/10: AUROC: 0.999873
+6/10: AUROC: 0.999593
+7/10: AUROC: 0.999520
+8/10: AUROC: 0.999685
+9/10: AUROC: 0.999864
 
 Performance of Detector:
-AUROC: 0.998900
+AUROC: 0.999364
 *************************************
 
 
 ************Evaluating*************
 In-Distribution Data: mnist, Out-of-Distribution Data: Omniglot.
-./data/public/Omniglot/images_evaluation/Tengwar/character25/1555_10.pngpng9_01.png/1425_12.png
+
+
 Get neural value of ood dataset...
-Image: 13180 / 13180
+
 get neural value in layer: -2
-category 0: 0 correct predictions, 2016 wrong predictions.
-category 1: 0 correct predictions, 129 wrong predictions.
-category 2: 0 correct predictions, 243 wrong predictions.
-category 3: 0 correct predictions, 1840 wrong predictions.
-category 4: 0 correct predictions, 293 wrong predictions.
-category 5: 0 correct predictions, 1397 wrong predictions.
-category 6: 0 correct predictions, 2930 wrong predictions.
-category 7: 0 correct predictions, 3391 wrong predictions.
-category 8: 0 correct predictions, 591 wrong predictions.
-category 9: 0 correct predictions, 350 wrong predictions.
+category 0: 0 correct predictions, 1190 wrong predictions.
+category 1: 0 correct predictions, 590 wrong predictions.
+category 2: 0 correct predictions, 567 wrong predictions.
+category 3: 0 correct predictions, 2708 wrong predictions.
+category 4: 0 correct predictions, 2730 wrong predictions.
+category 5: 0 correct predictions, 874 wrong predictions.
+category 6: 0 correct predictions, 656 wrong predictions.
+category 7: 0 correct predictions, 3189 wrong predictions.
+category 8: 0 correct predictions, 284 wrong predictions.
+category 9: 0 correct predictions, 392 wrong predictions.
 
 Encoding ReAD abstraction of ood dataset...
 selective rate: 0.6
 
 Encoding in fully connected layer:-2.
-category: 10 / 10
 
 
 Calculate distance between abstractions and cluster centers ...
-0/10: AUROC: 0.999748
-1/10: AUROC: 0.994326
-2/10: AUROC: 0.999553
-3/10: AUROC: 0.999351
-4/10: AUROC: 0.999383
-5/10: AUROC: 0.999123
-6/10: AUROC: 0.999713
-7/10: AUROC: 0.998619
-8/10: AUROC: 0.998610
-9/10: AUROC: 0.998647
+0/10: AUROC: 0.999710
+1/10: AUROC: 0.998404
+2/10: AUROC: 0.999434
+3/10: AUROC: 0.999859
+4/10: AUROC: 0.999492
+5/10: AUROC: 0.999850
+6/10: AUROC: 0.999321
+7/10: AUROC: 0.997681
+8/10: AUROC: 0.999541
+9/10: AUROC: 0.998862
 
 Performance of Detector:
-AUROC: 0.998707
+AUROC: 0.999215
 *************************************
 
 
 ************Evaluating*************
 In-Distribution Data: mnist, Out-of-Distribution Data: UniformNoise.
-./data/public/UniformNoise/5366.jpg
+
+
 Get neural value of ood dataset...
-Image: 9607 / 9607
+
+
 get neural value in layer: -2
 category 0: 0 correct predictions, 0 wrong predictions.
 category 1: 0 correct predictions, 9607 wrong predictions.
@@ -136,12 +138,10 @@ Encoding ReAD abstraction of ood dataset...
 selective rate: 0.6
 
 Encoding in fully connected layer:-2.
-category: 10 / 10
-
 
 Calculate distance between abstractions and cluster centers ...
 0/10: AUROC: No examples
-1/10: AUROC: 0.996494
+1/10: AUROC: 0.998753
 2/10: AUROC: No examples
 3/10: AUROC: No examples
 4/10: AUROC: No examples
@@ -152,15 +152,15 @@ Calculate distance between abstractions and cluster centers ...
 9/10: AUROC: No examples
 
 Performance of Detector:
-AUROC: 0.996494
+AUROC: 0.998753
 *************************************
 
 
 ************Evaluating*************
 In-Distribution Data: mnist, Out-of-Distribution Data: GuassianNoise.
-./data/public/GuassianNoise/5366.jpg
+
 Get neural value of ood dataset...
-Image: 9630 / 9630
+
 get neural value in layer: -2
 category 0: 0 correct predictions, 0 wrong predictions.
 category 1: 0 correct predictions, 9630 wrong predictions.
@@ -177,12 +177,22 @@ Encoding ReAD abstraction of ood dataset...
 selective rate: 0.6
 
 Encoding in fully connected layer:-2.
+
+category: 1 / 10
+category: 2 / 10
+category: 3 / 10
+category: 4 / 10
+category: 5 / 10
+category: 6 / 10
+category: 7 / 10
+category: 8 / 10
+category: 9 / 10
 category: 10 / 10
 
 
 Calculate distance between abstractions and cluster centers ...
 0/10: AUROC: No examples
-1/10: AUROC: 0.996490
+1/10: AUROC: 0.998989
 2/10: AUROC: No examples
 3/10: AUROC: No examples
 4/10: AUROC: No examples
@@ -193,5 +203,1172 @@ Calculate distance between abstractions and cluster centers ...
 9/10: AUROC: No examples
 
 Performance of Detector:
-AUROC: 0.996490
+AUROC: 0.998989
 *************************************
+
+
+
+
+
+
+
+
+
+
+
+
+
+2023-09-04 05:43:55.424143: W tensorflow/compiler/tf2tensorrt/utils/py_utils.cc:38] TF-TRT Warning: Could not find TensorRT
+Reusing dataset fashion_mnist (/home/zhangzhen19/.cache/huggingface/datasets/fashion_mnist/fashion_mnist/1.0.0/8d6c32399aa01613d96e2cbc9b13638f359ef62bb33612b077b4c247f6ef99c1)
+  0%|          | 0/2 [00:00<?, ?it/s]
+100%|██████████| 2/2 [00:00<00:00, 183.05it/s]
+********************** Train Detector ****************************
+
+Get neural value of train dataset:
+
+get neural value in layer: -2
+category 0: 5591 correct predictions, 490 wrong predictions.
+category 1: 5981 correct predictions, 22 wrong predictions.
+category 2: 5663 correct predictions, 371 wrong predictions.
+category 3: 5770 correct predictions, 266 wrong predictions.
+category 4: 5595 correct predictions, 288 wrong predictions.
+category 5: 5987 correct predictions, 61 wrong predictions.
+category 6: 5261 correct predictions, 709 wrong predictions.
+category 7: 5910 correct predictions, 193 wrong predictions.
+category 8: 5985 correct predictions, 7 wrong predictions.
+category 9: 5794 correct predictions, 56 wrong predictions.
+
+Statistic of train data neural value:
+finished!
+
+Encoding ReAD abstractions of train dataset:
+selective rate: 0.6
+
+Encoding in fully connected layer:-2.
+
+
+K-Means Clustering of Combination Abstraction on train data:
+K-Means Score(homo_score, comp_score, v_measure): 0.9492230331554554 0.9507667343891006 0.9499942566600853
+
+Calculate distance between abstractions and cluster centers ...
+
+********************** Evaluate OOD Detection ****************************
+
+Get neural value of test dataset:
+
+get neural value in layer: -2
+category 0: 912 correct predictions, 113 wrong predictions.
+category 1: 992 correct predictions, 3 wrong predictions.
+category 2: 920 correct predictions, 81 wrong predictions.
+category 3: 935 correct predictions, 66 wrong predictions.
+category 4: 920 correct predictions, 72 wrong predictions.
+category 5: 996 correct predictions, 20 wrong predictions.
+category 6: 826 correct predictions, 159 wrong predictions.
+category 7: 980 correct predictions, 40 wrong predictions.
+category 8: 997 correct predictions, 4 wrong predictions.
+category 9: 953 correct predictions, 11 wrong predictions.
+
+Encoding ReAD abstraction of test dataset:
+selective rate: 0.6
+
+Encoding in fully connected layer:-2.
+
+
+Calculate distance between abstractions and cluster centers ...
+
+************Evaluating*************
+In-Distribution Data: fashion_mnist, Out-of-Distribution Data: MNIST.
+  0%|          | 0/2 [00:00<?, ?it/s]
+100%|██████████| 2/2 [00:00<00:00, 438.62it/s]
+Get neural value of ood dataset...
+
+get neural value in layer: -2
+category 0: 0 correct predictions, 6 wrong predictions.
+category 1: 0 correct predictions, 83 wrong predictions.
+category 2: 0 correct predictions, 0 wrong predictions.
+category 3: 0 correct predictions, 432 wrong predictions.
+category 4: 0 correct predictions, 0 wrong predictions.
+category 5: 0 correct predictions, 9316 wrong predictions.
+category 6: 0 correct predictions, 0 wrong predictions.
+category 7: 0 correct predictions, 0 wrong predictions.
+category 8: 0 correct predictions, 163 wrong predictions.
+category 9: 0 correct predictions, 0 wrong predictions.
+
+Encoding ReAD abstraction of ood dataset...
+selective rate: 0.6
+
+Encoding in fully connected layer:-2.
+
+
+Calculate distance between abstractions and cluster centers ...
+0/10: AUROC: 1.000000
+1/10: AUROC: 0.999308
+2/10: AUROC: No examples
+3/10: AUROC: 0.997200
+4/10: AUROC: No examples
+5/10: AUROC: 0.959680
+6/10: AUROC: No examples
+7/10: AUROC: No examples
+8/10: AUROC: 0.990813
+9/10: AUROC: No examples
+
+Performance of Detector:
+AUROC: 0.989400
+*************************************
+
+
+************Evaluating*************
+In-Distribution Data: fashion_mnist, Out-of-Distribution Data: Omniglot.
+
+Get neural value of ood dataset...
+
+get neural value in layer: -2
+category 0: 0 correct predictions, 336 wrong predictions.
+category 1: 0 correct predictions, 25 wrong predictions.
+category 2: 0 correct predictions, 184 wrong predictions.
+category 3: 0 correct predictions, 42 wrong predictions.
+category 4: 0 correct predictions, 0 wrong predictions.
+category 5: 0 correct predictions, 10355 wrong predictions.
+category 6: 0 correct predictions, 3 wrong predictions.
+category 7: 0 correct predictions, 0 wrong predictions.
+category 8: 0 correct predictions, 2235 wrong predictions.
+category 9: 0 correct predictions, 0 wrong predictions.
+
+Encoding ReAD abstraction of ood dataset...
+selective rate: 0.6
+
+Encoding in fully connected layer:-2.
+
+
+Calculate distance between abstractions and cluster centers ...
+0/10: AUROC: 0.999807
+1/10: AUROC: 0.999798
+2/10: AUROC: 1.000000
+3/10: AUROC: 0.999771
+4/10: AUROC: No examples
+5/10: AUROC: 0.999890
+6/10: AUROC: 1.000000
+7/10: AUROC: No examples
+8/10: AUROC: 0.996266
+9/10: AUROC: No examples
+
+Performance of Detector:
+AUROC: 0.999362
+*************************************
+
+
+************Evaluating*************
+In-Distribution Data: fashion_mnist, Out-of-Distribution Data: UniformNoise.
+
+Get neural value of ood dataset...
+
+get neural value in layer: -2
+category 0: 0 correct predictions, 9501 wrong predictions.
+category 1: 0 correct predictions, 0 wrong predictions.
+category 2: 0 correct predictions, 0 wrong predictions.
+category 3: 0 correct predictions, 0 wrong predictions.
+category 4: 0 correct predictions, 0 wrong predictions.
+category 5: 0 correct predictions, 0 wrong predictions.
+category 6: 0 correct predictions, 0 wrong predictions.
+category 7: 0 correct predictions, 0 wrong predictions.
+category 8: 0 correct predictions, 106 wrong predictions.
+category 9: 0 correct predictions, 0 wrong predictions.
+
+Encoding ReAD abstraction of ood dataset...
+selective rate: 0.6
+
+Encoding in fully connected layer:-2.
+
+Calculate distance between abstractions and cluster centers ...
+0/10: AUROC: 0.999952
+1/10: AUROC: No examples
+2/10: AUROC: No examples
+3/10: AUROC: No examples
+4/10: AUROC: No examples
+5/10: AUROC: No examples
+6/10: AUROC: No examples
+7/10: AUROC: No examples
+8/10: AUROC: 0.994256
+9/10: AUROC: No examples
+
+Performance of Detector:
+AUROC: 0.997104
+*************************************
+
+
+************Evaluating*************
+In-Distribution Data: fashion_mnist, Out-of-Distribution Data: GuassianNoise.
+
+Get neural value of ood dataset...
+
+get neural value in layer: -2
+category 0: 0 correct predictions, 9046 wrong predictions.
+category 1: 0 correct predictions, 0 wrong predictions.
+category 2: 0 correct predictions, 0 wrong predictions.
+category 3: 0 correct predictions, 0 wrong predictions.
+category 4: 0 correct predictions, 0 wrong predictions.
+category 5: 0 correct predictions, 0 wrong predictions.
+category 6: 0 correct predictions, 0 wrong predictions.
+category 7: 0 correct predictions, 0 wrong predictions.
+category 8: 0 correct predictions, 584 wrong predictions.
+category 9: 0 correct predictions, 0 wrong predictions.
+
+Encoding ReAD abstraction of ood dataset...
+selective rate: 0.6
+
+Encoding in fully connected layer:-2.
+
+Calculate distance between abstractions and cluster centers ...
+0/10: AUROC: 0.999904
+1/10: AUROC: No examples
+2/10: AUROC: No examples
+3/10: AUROC: No examples
+4/10: AUROC: No examples
+5/10: AUROC: No examples
+6/10: AUROC: No examples
+7/10: AUROC: No examples
+8/10: AUROC: 0.995407
+9/10: AUROC: No examples
+
+Performance of Detector:
+AUROC: 0.997656
+*************************************
+
+
+
+
+
+
+
+
+
+
+2023-09-04 05:44:40.653189: W tensorflow/compiler/tf2tensorrt/utils/py_utils.cc:38] TF-TRT Warning: Could not find TensorRT
+Reusing dataset cifar10 (/home/zhangzhen19/.cache/huggingface/datasets/cifar10/plain_text/1.0.0/447d6ec4733dddd1ce3bb577c7166b986eaa4c538dcd9e805ba61f35674a9de4)
+  0%|          | 0/2 [00:00<?, ?it/s]
+ 50%|█████     | 1/2 [00:01<00:01,  1.01s/it]
+100%|██████████| 2/2 [00:01<00:00,  1.86it/s]
+100%|██████████| 2/2 [00:01<00:00,  1.64it/s]
+********************** Train Detector ****************************
+
+Get neural value of train dataset:
+
+get neural value in layer: -2
+category 0: 4976 correct predictions, 20 wrong predictions.
+category 1: 4981 correct predictions, 16 wrong predictions.
+category 2: 4981 correct predictions, 36 wrong predictions.
+category 3: 4942 correct predictions, 77 wrong predictions.
+category 4: 4977 correct predictions, 23 wrong predictions.
+category 5: 4928 correct predictions, 39 wrong predictions.
+category 6: 4989 correct predictions, 11 wrong predictions.
+category 7: 4981 correct predictions, 18 wrong predictions.
+category 8: 4985 correct predictions, 17 wrong predictions.
+category 9: 4981 correct predictions, 22 wrong predictions.
+
+Statistic of train data neural value:
+finished!
+
+Encoding ReAD abstractions of train dataset:
+selective rate: 0.6
+
+Encoding in fully connected layer:-2
+
+
+K-Means Clustering of Combination Abstraction on train data:
+K-Means Score(homo_score, comp_score, v_measure): 0.9968890665074439 0.9968894200615407 0.9968892432844609
+
+Calculate distance between abstractions and cluster centers ...
+
+********************** Evaluate OOD Detection ****************************
+
+Get neural value of test dataset:
+
+get neural value in layer: -2
+category 0: 984 correct predictions, 19 wrong predictions.
+category 1: 988 correct predictions, 20 wrong predictions.
+category 2: 981 correct predictions, 23 wrong predictions.
+category 3: 960 correct predictions, 51 wrong predictions.
+category 4: 974 correct predictions, 18 wrong predictions.
+category 5: 951 correct predictions, 37 wrong predictions.
+category 6: 994 correct predictions, 7 wrong predictions.
+category 7: 981 correct predictions, 14 wrong predictions.
+category 8: 988 correct predictions, 16 wrong predictions.
+category 9: 979 correct predictions, 15 wrong predictions.
+
+Encoding ReAD abstraction of test dataset:
+selective rate: 0.6
+
+Encoding in fully connected layer:-2.
+
+
+Calculate distance between abstractions and cluster centers ...
+
+************Evaluating*************
+In-Distribution Data: cifar10, Out-of-Distribution Data: TinyImageNet.
+
+Get neural value of ood dataset...
+
+get neural value in layer: -2
+category 0: 0 correct predictions, 854 wrong predictions.
+category 1: 0 correct predictions, 372 wrong predictions.
+category 2: 0 correct predictions, 1462 wrong predictions.
+category 3: 0 correct predictions, 1835 wrong predictions.
+category 4: 0 correct predictions, 376 wrong predictions.
+category 5: 0 correct predictions, 572 wrong predictions.
+category 6: 0 correct predictions, 1983 wrong predictions.
+category 7: 0 correct predictions, 650 wrong predictions.
+category 8: 0 correct predictions, 875 wrong predictions.
+category 9: 0 correct predictions, 1021 wrong predictions.
+
+Encoding ReAD abstraction of ood dataset...
+selective rate: 0.6
+
+Encoding in fully connected layer:-2.
+
+
+Calculate distance between abstractions and cluster centers ...
+0/10: AUROC: 0.993074
+1/10: AUROC: 0.900788
+2/10: AUROC: 0.978204
+3/10: AUROC: 0.968176
+4/10: AUROC: 0.961633
+5/10: AUROC: 0.913876
+6/10: AUROC: 0.973906
+7/10: AUROC: 0.997880
+8/10: AUROC: 0.983840
+9/10: AUROC: 0.986054
+
+Performance of Detector:
+AUROC: 0.965743
+*************************************
+
+
+************Evaluating*************
+In-Distribution Data: cifar10, Out-of-Distribution Data: LSUN.
+
+Get neural value of ood dataset...
+
+get neural value in layer: -2
+category 0: 0 correct predictions, 613 wrong predictions.
+category 1: 0 correct predictions, 472 wrong predictions.
+category 2: 0 correct predictions, 136 wrong predictions.
+category 3: 0 correct predictions, 960 wrong predictions.
+category 4: 0 correct predictions, 231 wrong predictions.
+category 5: 0 correct predictions, 35 wrong predictions.
+category 6: 0 correct predictions, 1449 wrong predictions.
+category 7: 0 correct predictions, 530 wrong predictions.
+category 8: 0 correct predictions, 2022 wrong predictions.
+category 9: 0 correct predictions, 3552 wrong predictions.
+
+Encoding ReAD abstraction of ood dataset...
+selective rate: 0.6
+
+Encoding in fully connected layer:-2.
+
+
+Calculate distance between abstractions and cluster centers ...
+0/10: AUROC: 0.993670
+1/10: AUROC: 0.999318
+2/10: AUROC: 0.994746
+3/10: AUROC: 0.997212
+4/10: AUROC: 0.996289
+5/10: AUROC: 0.990476
+6/10: AUROC: 0.991337
+7/10: AUROC: 0.999423
+8/10: AUROC: 0.988645
+9/10: AUROC: 0.995936
+
+Performance of Detector:
+AUROC: 0.994705
+*************************************
+
+
+************Evaluating*************
+In-Distribution Data: cifar10, Out-of-Distribution Data: iSUN.
+
+Get neural value of ood dataset...
+
+get neural value in layer: -2
+category 0: 0 correct predictions, 714 wrong predictions.
+category 1: 0 correct predictions, 292 wrong predictions.
+category 2: 0 correct predictions, 258 wrong predictions.
+category 3: 0 correct predictions, 696 wrong predictions.
+category 4: 0 correct predictions, 342 wrong predictions.
+category 5: 0 correct predictions, 22 wrong predictions.
+category 6: 0 correct predictions, 1945 wrong predictions.
+category 7: 0 correct predictions, 231 wrong predictions.
+category 8: 0 correct predictions, 1650 wrong predictions.
+category 9: 0 correct predictions, 2775 wrong predictions.
+
+Encoding ReAD abstraction of ood dataset...
+selective rate: 0.6
+
+Encoding in fully connected layer:-2.
+
+Calculate distance between abstractions and cluster centers ...
+0/10: AUROC: 0.989409
+1/10: AUROC: 0.998506
+2/10: AUROC: 0.995358
+3/10: AUROC: 0.997677
+4/10: AUROC: 0.996680
+5/10: AUROC: 0.997323
+6/10: AUROC: 0.988642
+7/10: AUROC: 0.998283
+8/10: AUROC: 0.987057
+9/10: AUROC: 0.995097
+
+Performance of Detector:
+AUROC: 0.994403
+*************************************
+
+
+************Evaluating*************
+In-Distribution Data: cifar10, Out-of-Distribution Data: UniformNoise.
+
+Get neural value of ood dataset...
+
+get neural value in layer: -2
+category 0: 0 correct predictions, 1876 wrong predictions.
+category 1: 0 correct predictions, 0 wrong predictions.
+category 2: 0 correct predictions, 7731 wrong predictions.
+category 3: 0 correct predictions, 0 wrong predictions.
+category 4: 0 correct predictions, 0 wrong predictions.
+category 5: 0 correct predictions, 0 wrong predictions.
+category 6: 0 correct predictions, 0 wrong predictions.
+category 7: 0 correct predictions, 0 wrong predictions.
+category 8: 0 correct predictions, 0 wrong predictions.
+category 9: 0 correct predictions, 0 wrong predictions.
+
+Encoding ReAD abstraction of ood dataset...
+selective rate: 0.6
+
+Encoding in fully connected layer:-2.
+
+
+Calculate distance between abstractions and cluster centers ...
+0/10: AUROC: 0.997827
+1/10: AUROC: No examples
+2/10: AUROC: 0.993238
+3/10: AUROC: No examples
+4/10: AUROC: No examples
+5/10: AUROC: No examples
+6/10: AUROC: No examples
+7/10: AUROC: No examples
+8/10: AUROC: No examples
+9/10: AUROC: No examples
+
+Performance of Detector:
+AUROC: 0.995532
+*************************************
+
+
+************Evaluating*************
+In-Distribution Data: cifar10, Out-of-Distribution Data: GuassianNoise.
+
+Get neural value of ood dataset...
+
+get neural value in layer: -2
+category 0: 0 correct predictions, 1746 wrong predictions.
+category 1: 0 correct predictions, 0 wrong predictions.
+category 2: 0 correct predictions, 7884 wrong predictions.
+category 3: 0 correct predictions, 0 wrong predictions.
+category 4: 0 correct predictions, 0 wrong predictions.
+category 5: 0 correct predictions, 0 wrong predictions.
+category 6: 0 correct predictions, 0 wrong predictions.
+category 7: 0 correct predictions, 0 wrong predictions.
+category 8: 0 correct predictions, 0 wrong predictions.
+category 9: 0 correct predictions, 0 wrong predictions.
+
+Encoding ReAD abstraction of ood dataset...
+selective rate: 0.6
+
+Encoding in fully connected layer:-2.
+
+
+Calculate distance between abstractions and cluster centers ...
+0/10: AUROC: 0.999768
+1/10: AUROC: No examples
+2/10: AUROC: 0.994123
+3/10: AUROC: No examples
+4/10: AUROC: No examples
+5/10: AUROC: No examples
+6/10: AUROC: No examples
+7/10: AUROC: No examples
+8/10: AUROC: No examples
+9/10: AUROC: No examples
+
+Performance of Detector:
+AUROC: 0.996945
+*************************************
+
+
+
+
+
+
+
+
+
+
+
+2023-09-04 12:50:23.865128: W tensorflow/compiler/tf2tensorrt/utils/py_utils.cc:38] TF-TRT Warning: Could not find TensorRT
+
+Load GTSRB train dataset...
+
+Training Dataset Length:39209
+
+Load GTSRB test dataset...
+
+Testing Dataset Length:12630
+
+********************** Train Detector ****************************
+
+Get neural value of train dataset:
+
+get neural value in layer: -2
+category 0: 210 correct predictions, 0 wrong predictions.
+category 1: 2219 correct predictions, 10 wrong predictions.
+category 2: 2243 correct predictions, 8 wrong predictions.
+category 3: 1410 correct predictions, 0 wrong predictions.
+category 4: 1978 correct predictions, 2 wrong predictions.
+category 5: 1851 correct predictions, 1 wrong predictions.
+category 6: 419 correct predictions, 0 wrong predictions.
+category 7: 1440 correct predictions, 1 wrong predictions.
+category 8: 1408 correct predictions, 0 wrong predictions.
+category 9: 1470 correct predictions, 0 wrong predictions.
+category 10: 2010 correct predictions, 0 wrong predictions.
+category 11: 1320 correct predictions, 1 wrong predictions.
+category 12: 2100 correct predictions, 1 wrong predictions.
+category 13: 2160 correct predictions, 0 wrong predictions.
+category 14: 780 correct predictions, 0 wrong predictions.
+category 15: 630 correct predictions, 0 wrong predictions.
+category 16: 420 correct predictions, 0 wrong predictions.
+category 17: 1109 correct predictions, 0 wrong predictions.
+category 18: 1199 correct predictions, 0 wrong predictions.
+category 19: 209 correct predictions, 0 wrong predictions.
+category 20: 360 correct predictions, 2 wrong predictions.
+category 21: 330 correct predictions, 3 wrong predictions.
+category 22: 390 correct predictions, 0 wrong predictions.
+category 23: 509 correct predictions, 0 wrong predictions.
+category 24: 270 correct predictions, 0 wrong predictions.
+category 25: 1499 correct predictions, 0 wrong predictions.
+category 26: 600 correct predictions, 0 wrong predictions.
+category 27: 240 correct predictions, 0 wrong predictions.
+category 28: 540 correct predictions, 0 wrong predictions.
+category 29: 270 correct predictions, 0 wrong predictions.
+category 30: 449 correct predictions, 0 wrong predictions.
+category 31: 778 correct predictions, 0 wrong predictions.
+category 32: 240 correct predictions, 0 wrong predictions.
+category 33: 689 correct predictions, 13 wrong predictions.
+category 34: 408 correct predictions, 0 wrong predictions.
+category 35: 1200 correct predictions, 0 wrong predictions.
+category 36: 390 correct predictions, 0 wrong predictions.
+category 37: 210 correct predictions, 0 wrong predictions.
+category 38: 2070 correct predictions, 1 wrong predictions.
+category 39: 299 correct predictions, 0 wrong predictions.
+category 40: 359 correct predictions, 0 wrong predictions.
+category 41: 240 correct predictions, 1 wrong predictions.
+category 42: 240 correct predictions, 0 wrong predictions.
+
+Statistic of train data neural value:
+finished!
+
+Encoding ReAD abstractions of train dataset:
+selective rate: 0.6
+
+Encoding in fully connected layer:-2.
+
+K-Means Clustering of Combination Abstraction on train data:
+K-Means Score(homo_score, comp_score, v_measure): 0.9984102254268462 0.9625485440103518 0.9801514685446177
+
+Calculate distance between abstractions and cluster centers ...
+
+********************** Evaluate OOD Detection ****************************
+
+Get neural value of test dataset:
+
+get neural value in layer: -2
+category 0: 60 correct predictions, 1 wrong predictions.
+category 1: 716 correct predictions, 3 wrong predictions.
+category 2: 748 correct predictions, 34 wrong predictions.
+category 3: 432 correct predictions, 1 wrong predictions.
+category 4: 650 correct predictions, 3 wrong predictions.
+category 5: 619 correct predictions, 10 wrong predictions.
+category 6: 147 correct predictions, 0 wrong predictions.
+category 7: 449 correct predictions, 1 wrong predictions.
+category 8: 441 correct predictions, 1 wrong predictions.
+category 9: 480 correct predictions, 0 wrong predictions.
+category 10: 660 correct predictions, 0 wrong predictions.
+category 11: 413 correct predictions, 17 wrong predictions.
+category 12: 690 correct predictions, 1 wrong predictions.
+category 13: 720 correct predictions, 9 wrong predictions.
+category 14: 270 correct predictions, 0 wrong predictions.
+category 15: 210 correct predictions, 0 wrong predictions.
+category 16: 150 correct predictions, 1 wrong predictions.
+category 17: 360 correct predictions, 0 wrong predictions.
+category 18: 361 correct predictions, 1 wrong predictions.
+category 19: 57 correct predictions, 25 wrong predictions.
+category 20: 65 correct predictions, 14 wrong predictions.
+category 21: 90 correct predictions, 34 wrong predictions.
+category 22: 98 correct predictions, 0 wrong predictions.
+category 23: 150 correct predictions, 3 wrong predictions.
+category 24: 90 correct predictions, 0 wrong predictions.
+category 25: 469 correct predictions, 16 wrong predictions.
+category 26: 175 correct predictions, 0 wrong predictions.
+category 27: 59 correct predictions, 0 wrong predictions.
+category 28: 150 correct predictions, 0 wrong predictions.
+category 29: 90 correct predictions, 0 wrong predictions.
+category 30: 141 correct predictions, 11 wrong predictions.
+category 31: 259 correct predictions, 0 wrong predictions.
+category 32: 60 correct predictions, 1 wrong predictions.
+category 33: 172 correct predictions, 19 wrong predictions.
+category 34: 102 correct predictions, 39 wrong predictions.
+category 35: 384 correct predictions, 0 wrong predictions.
+category 36: 73 correct predictions, 35 wrong predictions.
+category 37: 24 correct predictions, 36 wrong predictions.
+category 38: 688 correct predictions, 53 wrong predictions.
+category 39: 51 correct predictions, 1 wrong predictions.
+category 40: 81 correct predictions, 5 wrong predictions.
+category 41: 60 correct predictions, 1 wrong predictions.
+category 42: 90 correct predictions, 0 wrong predictions.
+
+Encoding ReAD abstraction of test dataset:
+selective rate: 0.6
+
+Encoding in fully connected layer:-2.
+
+
+Calculate distance between abstractions and cluster centers ...
+
+************Evaluating*************
+In-Distribution Data: gtsrb, Out-of-Distribution Data: TinyImageNet.
+
+Get neural value of ood dataset...
+
+get neural value in layer: -2
+category 0: 0 correct predictions, 9 wrong predictions.
+category 1: 0 correct predictions, 51 wrong predictions.
+category 2: 0 correct predictions, 51 wrong predictions.
+category 3: 0 correct predictions, 20 wrong predictions.
+category 4: 0 correct predictions, 23 wrong predictions.
+category 5: 0 correct predictions, 16 wrong predictions.
+category 6: 0 correct predictions, 12 wrong predictions.
+category 7: 0 correct predictions, 80 wrong predictions.
+category 8: 0 correct predictions, 13 wrong predictions.
+category 9: 0 correct predictions, 699 wrong predictions.
+category 10: 0 correct predictions, 36 wrong predictions.
+category 11: 0 correct predictions, 941 wrong predictions.
+category 12: 0 correct predictions, 915 wrong predictions.
+category 13: 0 correct predictions, 2017 wrong predictions.
+category 14: 0 correct predictions, 152 wrong predictions.
+category 15: 0 correct predictions, 628 wrong predictions.
+category 16: 0 correct predictions, 250 wrong predictions.
+category 17: 0 correct predictions, 321 wrong predictions.
+category 18: 0 correct predictions, 151 wrong predictions.
+category 19: 0 correct predictions, 69 wrong predictions.
+category 20: 0 correct predictions, 158 wrong predictions.
+category 21: 0 correct predictions, 68 wrong predictions.
+category 22: 0 correct predictions, 11 wrong predictions.
+category 23: 0 correct predictions, 192 wrong predictions.
+category 24: 0 correct predictions, 11 wrong predictions.
+category 25: 0 correct predictions, 706 wrong predictions.
+category 26: 0 correct predictions, 56 wrong predictions.
+category 27: 0 correct predictions, 1 wrong predictions.
+category 28: 0 correct predictions, 1 wrong predictions.
+category 29: 0 correct predictions, 78 wrong predictions.
+category 30: 0 correct predictions, 25 wrong predictions.
+category 31: 0 correct predictions, 7 wrong predictions.
+category 32: 0 correct predictions, 41 wrong predictions.
+category 33: 0 correct predictions, 31 wrong predictions.
+category 34: 0 correct predictions, 36 wrong predictions.
+category 35: 0 correct predictions, 115 wrong predictions.
+category 36: 0 correct predictions, 24 wrong predictions.
+category 37: 0 correct predictions, 163 wrong predictions.
+category 38: 0 correct predictions, 765 wrong predictions.
+category 39: 0 correct predictions, 4 wrong predictions.
+category 40: 0 correct predictions, 482 wrong predictions.
+category 41: 0 correct predictions, 379 wrong predictions.
+category 42: 0 correct predictions, 192 wrong predictions.
+
+Encoding ReAD abstraction of ood dataset...
+selective rate: 0.6
+
+Encoding in fully connected layer:-2.
+
+
+Calculate distance between abstractions and cluster centers ...
+0/43: AUROC: 1.000000
+1/43: AUROC: 0.999836
+2/43: AUROC: 0.999738
+3/43: AUROC: 1.000000
+4/43: AUROC: 1.000000
+5/43: AUROC: 1.000000
+6/43: AUROC: 0.998866
+7/43: AUROC: 1.000000
+8/43: AUROC: 1.000000
+9/43: AUROC: 0.999997
+10/43: AUROC: 0.999663
+11/43: AUROC: 0.999840
+12/43: AUROC: 0.999671
+13/43: AUROC: 0.998774
+14/43: AUROC: 0.999659
+15/43: AUROC: 0.999598
+16/43: AUROC: 0.999973
+17/43: AUROC: 0.999498
+18/43: AUROC: 0.998202
+19/43: AUROC: 1.000000
+20/43: AUROC: 1.000000
+21/43: AUROC: 1.000000
+22/43: AUROC: 1.000000
+23/43: AUROC: 0.999688
+24/43: AUROC: 1.000000
+25/43: AUROC: 1.000000
+26/43: AUROC: 1.000000
+27/43: AUROC: 1.000000
+28/43: AUROC: 1.000000
+29/43: AUROC: 1.000000
+30/43: AUROC: 0.998298
+31/43: AUROC: 1.000000
+32/43: AUROC: 1.000000
+33/43: AUROC: 1.000000
+34/43: AUROC: 1.000000
+35/43: AUROC: 0.999841
+36/43: AUROC: 1.000000
+37/43: AUROC: 1.000000
+38/43: AUROC: 0.997756
+39/43: AUROC: 1.000000
+40/43: AUROC: 0.996107
+41/43: AUROC: 0.999472
+42/43: AUROC: 0.999537
+
+Performance of Detector:
+AUROC: 0.999628
+*************************************
+
+
+************Evaluating*************
+In-Distribution Data: gtsrb, Out-of-Distribution Data: LSUN.
+
+Get neural value of ood dataset...
+
+get neural value in layer: -2
+category 0: 0 correct predictions, 0 wrong predictions.
+category 1: 0 correct predictions, 19 wrong predictions.
+category 2: 0 correct predictions, 30 wrong predictions.
+category 3: 0 correct predictions, 4 wrong predictions.
+category 4: 0 correct predictions, 2 wrong predictions.
+category 5: 0 correct predictions, 0 wrong predictions.
+category 6: 0 correct predictions, 2 wrong predictions.
+category 7: 0 correct predictions, 36 wrong predictions.
+category 8: 0 correct predictions, 1 wrong predictions.
+category 9: 0 correct predictions, 1234 wrong predictions.
+category 10: 0 correct predictions, 101 wrong predictions.
+category 11: 0 correct predictions, 776 wrong predictions.
+category 12: 0 correct predictions, 421 wrong predictions.
+category 13: 0 correct predictions, 2733 wrong predictions.
+category 14: 0 correct predictions, 180 wrong predictions.
+category 15: 0 correct predictions, 1298 wrong predictions.
+category 16: 0 correct predictions, 114 wrong predictions.
+category 17: 0 correct predictions, 130 wrong predictions.
+category 18: 0 correct predictions, 289 wrong predictions.
+category 19: 0 correct predictions, 13 wrong predictions.
+category 20: 0 correct predictions, 193 wrong predictions.
+category 21: 0 correct predictions, 77 wrong predictions.
+category 22: 0 correct predictions, 0 wrong predictions.
+category 23: 0 correct predictions, 39 wrong predictions.
+category 24: 0 correct predictions, 6 wrong predictions.
+category 25: 0 correct predictions, 782 wrong predictions.
+category 26: 0 correct predictions, 15 wrong predictions.
+category 27: 0 correct predictions, 0 wrong predictions.
+category 28: 0 correct predictions, 1 wrong predictions.
+category 29: 0 correct predictions, 16 wrong predictions.
+category 30: 0 correct predictions, 2 wrong predictions.
+category 31: 0 correct predictions, 0 wrong predictions.
+category 32: 0 correct predictions, 8 wrong predictions.
+category 33: 0 correct predictions, 2 wrong predictions.
+category 34: 0 correct predictions, 7 wrong predictions.
+category 35: 0 correct predictions, 168 wrong predictions.
+category 36: 0 correct predictions, 2 wrong predictions.
+category 37: 0 correct predictions, 154 wrong predictions.
+category 38: 0 correct predictions, 443 wrong predictions.
+category 39: 0 correct predictions, 2 wrong predictions.
+category 40: 0 correct predictions, 200 wrong predictions.
+category 41: 0 correct predictions, 150 wrong predictions.
+category 42: 0 correct predictions, 350 wrong predictions.
+
+Encoding ReAD abstraction of ood dataset...
+selective rate: 0.6
+
+Encoding in fully connected layer:-2.
+
+
+
+Calculate distance between abstractions and cluster centers ...
+0/43: AUROC: No examples
+1/43: AUROC: 0.999559
+2/43: AUROC: 0.999554
+3/43: AUROC: 1.000000
+4/43: AUROC: 1.000000
+5/43: AUROC: No examples
+6/43: AUROC: 1.000000
+7/43: AUROC: 1.000000
+8/43: AUROC: 1.000000
+9/43: AUROC: 1.000000
+10/43: AUROC: 0.999115
+11/43: AUROC: 0.999863
+12/43: AUROC: 0.999883
+13/43: AUROC: 0.998872
+14/43: AUROC: 0.999239
+15/43: AUROC: 0.999886
+16/43: AUROC: 1.000000
+17/43: AUROC: 0.999979
+18/43: AUROC: 0.999061
+19/43: AUROC: 1.000000
+20/43: AUROC: 1.000000
+21/43: AUROC: 1.000000
+22/43: AUROC: No examples
+23/43: AUROC: 0.999658
+24/43: AUROC: 1.000000
+25/43: AUROC: 1.000000
+26/43: AUROC: 1.000000
+27/43: AUROC: No examples
+28/43: AUROC: 1.000000
+29/43: AUROC: 1.000000
+30/43: AUROC: 1.000000
+31/43: AUROC: No examples
+32/43: AUROC: 1.000000
+33/43: AUROC: 1.000000
+34/43: AUROC: 1.000000
+35/43: AUROC: 0.999752
+36/43: AUROC: 1.000000
+37/43: AUROC: 1.000000
+38/43: AUROC: 0.997713
+39/43: AUROC: 1.000000
+40/43: AUROC: 0.991296
+41/43: AUROC: 0.998444
+42/43: AUROC: 0.999238
+
+Performance of Detector:
+AUROC: 0.999503
+*************************************
+
+
+************Evaluating*************
+In-Distribution Data: gtsrb, Out-of-Distribution Data: iSUN.
+
+Get neural value of ood dataset...
+
+get neural value in layer: -2
+category 0: 0 correct predictions, 0 wrong predictions.
+category 1: 0 correct predictions, 30 wrong predictions.
+category 2: 0 correct predictions, 21 wrong predictions.
+category 3: 0 correct predictions, 8 wrong predictions.
+category 4: 0 correct predictions, 1 wrong predictions.
+category 5: 0 correct predictions, 2 wrong predictions.
+category 6: 0 correct predictions, 2 wrong predictions.
+category 7: 0 correct predictions, 62 wrong predictions.
+category 8: 0 correct predictions, 2 wrong predictions.
+category 9: 0 correct predictions, 940 wrong predictions.
+category 10: 0 correct predictions, 72 wrong predictions.
+category 11: 0 correct predictions, 608 wrong predictions.
+category 12: 0 correct predictions, 467 wrong predictions.
+category 13: 0 correct predictions, 2714 wrong predictions.
+category 14: 0 correct predictions, 154 wrong predictions.
+category 15: 0 correct predictions, 760 wrong predictions.
+category 16: 0 correct predictions, 73 wrong predictions.
+category 17: 0 correct predictions, 110 wrong predictions.
+category 18: 0 correct predictions, 175 wrong predictions.
+category 19: 0 correct predictions, 10 wrong predictions.
+category 20: 0 correct predictions, 180 wrong predictions.
+category 21: 0 correct predictions, 64 wrong predictions.
+category 22: 0 correct predictions, 2 wrong predictions.
+category 23: 0 correct predictions, 66 wrong predictions.
+category 24: 0 correct predictions, 2 wrong predictions.
+category 25: 0 correct predictions, 652 wrong predictions.
+category 26: 0 correct predictions, 16 wrong predictions.
+category 27: 0 correct predictions, 0 wrong predictions.
+category 28: 0 correct predictions, 0 wrong predictions.
+category 29: 0 correct predictions, 18 wrong predictions.
+category 30: 0 correct predictions, 18 wrong predictions.
+category 31: 0 correct predictions, 0 wrong predictions.
+category 32: 0 correct predictions, 21 wrong predictions.
+category 33: 0 correct predictions, 13 wrong predictions.
+category 34: 0 correct predictions, 14 wrong predictions.
+category 35: 0 correct predictions, 145 wrong predictions.
+category 36: 0 correct predictions, 3 wrong predictions.
+category 37: 0 correct predictions, 94 wrong predictions.
+category 38: 0 correct predictions, 681 wrong predictions.
+category 39: 0 correct predictions, 1 wrong predictions.
+category 40: 0 correct predictions, 236 wrong predictions.
+category 41: 0 correct predictions, 149 wrong predictions.
+category 42: 0 correct predictions, 339 wrong predictions.
+
+Encoding ReAD abstraction of ood dataset...
+selective rate: 0.6
+
+Encoding in fully connected layer:-2.
+
+
+Calculate distance between abstractions and cluster centers ...
+0/43: AUROC: No examples
+1/43: AUROC: 0.999814
+2/43: AUROC: 0.999936
+3/43: AUROC: 1.000000
+4/43: AUROC: 1.000000
+5/43: AUROC: 1.000000
+6/43: AUROC: 0.986395
+7/43: AUROC: 1.000000
+8/43: AUROC: 1.000000
+9/43: AUROC: 0.999993
+10/43: AUROC: 0.999137
+11/43: AUROC: 0.999801
+12/43: AUROC: 0.999857
+13/43: AUROC: 0.998887
+14/43: AUROC: 0.999519
+15/43: AUROC: 0.999793
+16/43: AUROC: 1.000000
+17/43: AUROC: 1.000000
+18/43: AUROC: 0.999335
+19/43: AUROC: 1.000000
+20/43: AUROC: 1.000000
+21/43: AUROC: 1.000000
+22/43: AUROC: 1.000000
+23/43: AUROC: 0.999899
+24/43: AUROC: 1.000000
+25/43: AUROC: 1.000000
+26/43: AUROC: 1.000000
+27/43: AUROC: No examples
+28/43: AUROC: No examples
+29/43: AUROC: 1.000000
+30/43: AUROC: 1.000000
+31/43: AUROC: No examples
+32/43: AUROC: 1.000000
+33/43: AUROC: 1.000000
+34/43: AUROC: 1.000000
+35/43: AUROC: 0.999892
+36/43: AUROC: 0.995434
+37/43: AUROC: 1.000000
+38/43: AUROC: 0.996993
+39/43: AUROC: 1.000000
+40/43: AUROC: 0.988962
+41/43: AUROC: 0.999329
+42/43: AUROC: 0.999639
+
+Performance of Detector:
+AUROC: 0.999041
+*************************************
+
+
+************Evaluating*************
+In-Distribution Data: gtsrb, Out-of-Distribution Data: UniformNoise.
+
+Get neural value of ood dataset...
+
+get neural value in layer: -2
+category 0: 0 correct predictions, 0 wrong predictions.
+category 1: 0 correct predictions, 0 wrong predictions.
+category 2: 0 correct predictions, 0 wrong predictions.
+category 3: 0 correct predictions, 0 wrong predictions.
+category 4: 0 correct predictions, 0 wrong predictions.
+category 5: 0 correct predictions, 0 wrong predictions.
+category 6: 0 correct predictions, 0 wrong predictions.
+category 7: 0 correct predictions, 0 wrong predictions.
+category 8: 0 correct predictions, 0 wrong predictions.
+category 9: 0 correct predictions, 0 wrong predictions.
+category 10: 0 correct predictions, 0 wrong predictions.
+category 11: 0 correct predictions, 0 wrong predictions.
+category 12: 0 correct predictions, 0 wrong predictions.
+category 13: 0 correct predictions, 0 wrong predictions.
+category 14: 0 correct predictions, 0 wrong predictions.
+category 15: 0 correct predictions, 0 wrong predictions.
+category 16: 0 correct predictions, 0 wrong predictions.
+category 17: 0 correct predictions, 0 wrong predictions.
+category 18: 0 correct predictions, 0 wrong predictions.
+category 19: 0 correct predictions, 0 wrong predictions.
+category 20: 0 correct predictions, 8230 wrong predictions.
+category 21: 0 correct predictions, 0 wrong predictions.
+category 22: 0 correct predictions, 0 wrong predictions.
+category 23: 0 correct predictions, 0 wrong predictions.
+category 24: 0 correct predictions, 0 wrong predictions.
+category 25: 0 correct predictions, 474 wrong predictions.
+category 26: 0 correct predictions, 903 wrong predictions.
+category 27: 0 correct predictions, 0 wrong predictions.
+category 28: 0 correct predictions, 0 wrong predictions.
+category 29: 0 correct predictions, 0 wrong predictions.
+category 30: 0 correct predictions, 0 wrong predictions.
+category 31: 0 correct predictions, 0 wrong predictions.
+category 32: 0 correct predictions, 0 wrong predictions.
+category 33: 0 correct predictions, 0 wrong predictions.
+category 34: 0 correct predictions, 0 wrong predictions.
+category 35: 0 correct predictions, 0 wrong predictions.
+category 36: 0 correct predictions, 0 wrong predictions.
+category 37: 0 correct predictions, 0 wrong predictions.
+category 38: 0 correct predictions, 0 wrong predictions.
+category 39: 0 correct predictions, 0 wrong predictions.
+category 40: 0 correct predictions, 0 wrong predictions.
+category 41: 0 correct predictions, 0 wrong predictions.
+category 42: 0 correct predictions, 0 wrong predictions.
+
+Encoding ReAD abstraction of ood dataset...
+selective rate: 0.6
+
+Encoding in fully connected layer:-2.
+
+
+Calculate distance between abstractions and cluster centers ...
+0/43: AUROC: No examples
+1/43: AUROC: No examples
+2/43: AUROC: No examples
+3/43: AUROC: No examples
+4/43: AUROC: No examples
+5/43: AUROC: No examples
+6/43: AUROC: No examples
+7/43: AUROC: No examples
+8/43: AUROC: No examples
+9/43: AUROC: No examples
+10/43: AUROC: No examples
+11/43: AUROC: No examples
+12/43: AUROC: No examples
+13/43: AUROC: No examples
+14/43: AUROC: No examples
+15/43: AUROC: No examples
+16/43: AUROC: No examples
+17/43: AUROC: No examples
+18/43: AUROC: No examples
+19/43: AUROC: No examples
+20/43: AUROC: 1.000000
+21/43: AUROC: No examples
+22/43: AUROC: No examples
+23/43: AUROC: No examples
+24/43: AUROC: No examples
+25/43: AUROC: 1.000000
+26/43: AUROC: 1.000000
+27/43: AUROC: No examples
+28/43: AUROC: No examples
+29/43: AUROC: No examples
+30/43: AUROC: No examples
+31/43: AUROC: No examples
+32/43: AUROC: No examples
+33/43: AUROC: No examples
+34/43: AUROC: No examples
+35/43: AUROC: No examples
+36/43: AUROC: No examples
+37/43: AUROC: No examples
+38/43: AUROC: No examples
+39/43: AUROC: No examples
+40/43: AUROC: No examples
+41/43: AUROC: No examples
+42/43: AUROC: No examples
+
+Performance of Detector:
+AUROC: 1.000000
+*************************************
+
+
+************Evaluating*************
+In-Distribution Data: gtsrb, Out-of-Distribution Data: GuassianNoise.
+
+Get neural value of ood dataset...
+
+get neural value in layer: -2
+category 0: 0 correct predictions, 0 wrong predictions.
+category 1: 0 correct predictions, 0 wrong predictions.
+category 2: 0 correct predictions, 0 wrong predictions.
+category 3: 0 correct predictions, 0 wrong predictions.
+category 4: 0 correct predictions, 0 wrong predictions.
+category 5: 0 correct predictions, 0 wrong predictions.
+category 6: 0 correct predictions, 0 wrong predictions.
+category 7: 0 correct predictions, 0 wrong predictions.
+category 8: 0 correct predictions, 0 wrong predictions.
+category 9: 0 correct predictions, 0 wrong predictions.
+category 10: 0 correct predictions, 0 wrong predictions.
+category 11: 0 correct predictions, 0 wrong predictions.
+category 12: 0 correct predictions, 0 wrong predictions.
+category 13: 0 correct predictions, 11 wrong predictions.
+category 14: 0 correct predictions, 0 wrong predictions.
+category 15: 0 correct predictions, 0 wrong predictions.
+category 16: 0 correct predictions, 0 wrong predictions.
+category 17: 0 correct predictions, 0 wrong predictions.
+category 18: 0 correct predictions, 0 wrong predictions.
+category 19: 0 correct predictions, 0 wrong predictions.
+category 20: 0 correct predictions, 9570 wrong predictions.
+category 21: 0 correct predictions, 0 wrong predictions.
+category 22: 0 correct predictions, 0 wrong predictions.
+category 23: 0 correct predictions, 0 wrong predictions.
+category 24: 0 correct predictions, 0 wrong predictions.
+category 25: 0 correct predictions, 1 wrong predictions.
+category 26: 0 correct predictions, 35 wrong predictions.
+category 27: 0 correct predictions, 0 wrong predictions.
+category 28: 0 correct predictions, 0 wrong predictions.
+category 29: 0 correct predictions, 0 wrong predictions.
+category 30: 0 correct predictions, 0 wrong predictions.
+category 31: 0 correct predictions, 0 wrong predictions.
+category 32: 0 correct predictions, 0 wrong predictions.
+category 33: 0 correct predictions, 0 wrong predictions.
+category 34: 0 correct predictions, 0 wrong predictions.
+category 35: 0 correct predictions, 0 wrong predictions.
+category 36: 0 correct predictions, 0 wrong predictions.
+category 37: 0 correct predictions, 0 wrong predictions.
+category 38: 0 correct predictions, 13 wrong predictions.
+category 39: 0 correct predictions, 0 wrong predictions.
+category 40: 0 correct predictions, 0 wrong predictions.
+category 41: 0 correct predictions, 0 wrong predictions.
+category 42: 0 correct predictions, 0 wrong predictions.
+
+Encoding ReAD abstraction of ood dataset...
+selective rate: 0.6
+
+Encoding in fully connected layer:-2.
+
+
+Calculate distance between abstractions and cluster centers ...
+0/43: AUROC: No examples
+1/43: AUROC: No examples
+2/43: AUROC: No examples
+3/43: AUROC: No examples
+4/43: AUROC: No examples
+5/43: AUROC: No examples
+6/43: AUROC: No examples
+7/43: AUROC: No examples
+8/43: AUROC: No examples
+9/43: AUROC: No examples
+10/43: AUROC: No examples
+11/43: AUROC: No examples
+12/43: AUROC: No examples
+13/43: AUROC: 0.998737
+14/43: AUROC: No examples
+15/43: AUROC: No examples
+16/43: AUROC: No examples
+17/43: AUROC: No examples
+18/43: AUROC: No examples
+19/43: AUROC: No examples
+20/43: AUROC: 1.000000
+21/43: AUROC: No examples
+22/43: AUROC: No examples
+23/43: AUROC: No examples
+24/43: AUROC: No examples
+25/43: AUROC: 1.000000
+26/43: AUROC: 1.000000
+27/43: AUROC: No examples
+28/43: AUROC: No examples
+29/43: AUROC: No examples
+30/43: AUROC: No examples
+31/43: AUROC: No examples
+32/43: AUROC: No examples
+33/43: AUROC: No examples
+34/43: AUROC: No examples
+35/43: AUROC: No examples
+36/43: AUROC: No examples
+37/43: AUROC: No examples
+38/43: AUROC: 1.000000
+39/43: AUROC: No examples
+40/43: AUROC: No examples
+41/43: AUROC: No examples
+42/43: AUROC: No examples
+
+Performance of Detector:
+AUROC: 0.999747
+*************************************
+
+
+
