@@ -46,11 +46,11 @@ if __name__ == "__main__":
                 plt.plot(x, gtsrb_performance[o], label=f'GTSRB vs {o}')
         plt.legend(loc='lower right')
         plt.tick_params(labelsize=15)
-        plt.ylim(0.7, 1)
+        plt.ylim(0.8, 1)
         ax = plt.gca()
         y_major_locator = plt.MultipleLocator(0.02)
         ax.yaxis.set_major_locator(y_major_locator)
-        ax.vlines(0.2, 0.7, 1.0, linestyles='--', colors='darkgray')
+        ax.vlines(0.6, 0.7, 1.0, linestyles='--', colors='darkgray')
         plt.show()
         exit()
 
@@ -61,21 +61,20 @@ if __name__ == "__main__":
     # id_dataset = 'cifar10'
     # id_dataset = 'gtsrb'
 
-
     if id_dataset == 'mnist':
         row_names = ('image', 'label')
         finetuned_checkpoint = "./models/swin-finetuned-mnist/best"
-        dataset = load_dataset("./data/mnist/")
+        dataset = load_dataset("./data/mnist/mnist/")
 
     elif id_dataset == 'fashion_mnist':
         row_names = ('image', 'label')
         finetuned_checkpoint = "./models/swin-finetuned-fashion_mnist/best"
-        dataset = load_dataset("./data/fashion_mnist/")
+        dataset = load_dataset("./data/fashion_mnist/fashion_mnist/")
 
     elif id_dataset == 'cifar10':
         row_names = ('img', 'label')
         finetuned_checkpoint = "./models/swin-finetuned-cifar10/best"
-        dataset = load_dataset("./data/cifar10/")
+        dataset = load_dataset("./data/cifar10/cifar10/")
 
     elif id_dataset == 'gtsrb':
         row_names = ('image', 'label')

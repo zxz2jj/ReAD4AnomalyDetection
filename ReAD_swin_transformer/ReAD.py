@@ -1,22 +1,19 @@
-import matplotlib.pyplot as plt
 import numpy as np
 import math
 import torch
 from sklearn.cluster import KMeans
 from sklearn import metrics
 from sklearn.metrics import auc, roc_curve
-from sklearn.manifold import TSNE
 from torch.utils.data import Subset
-from transformers import SwinConfig
+from transformers import SwinConfig, SwinForImageClassification
 
-from global_config import num_of_labels, swin_config
 import global_config
 from model_swin_transformer import SwinForImageClassification
 from train_swin_models import image_tokenizer
 
 
 def get_neural_value(id_dataset, dataset, checkpoint, is_ood=False):
-    config = SwinConfig.from_pretrained(checkpoint, num_labels=num_of_labels[id_dataset],
+    config = SwinConfig.from_pretrained(checkpoint, num_labels=global_config.num_of_labels[id_dataset],
                                         output_hidden_states=False, ignore_mismatched_sizes=True)
     model = SwinForImageClassification.from_pretrained(checkpoint, config=config)
 
@@ -24,12 +21,12 @@ def get_neural_value(id_dataset, dataset, checkpoint, is_ood=False):
     dataset = Subset(dataset, range(0, dataset.shape[0])).__getitem__([_ for _ in range(dataset.shape[0])])
     # dataset = Subset(dataset, range(0, 100)).__getitem__([_ for _ in range(100)])
 
-    layers = swin_config[id_dataset]['layers_of_getting_value']
+    layers = global_config.swin_config[id_dataset]['layers_of_getting_value']
 
     neural_value_dict = {}
     for layer in layers:
         neural_value_category = {}
-        for category in range(num_of_labels[id_dataset]):
+        for category in range(global_config.num_of_labels[id_dataset]):
             neural_value_category[category] = {'correct_pictures': [], 'correct_predictions': [],
                                                'wrong_pictures': [], 'wrong_predictions': []}
         neural_value_dict[layer] = neural_value_category
@@ -67,7 +64,7 @@ def get_neural_value(id_dataset, dataset, checkpoint, is_ood=False):
     result_dict = {}
     for layer in layers:
         result_dict[layer] = {}
-        for category in range(num_of_labels[id_dataset]):
+        for category in range(global_config.num_of_labels[id_dataset]):
             result_dict[layer][category] = {}
             number_of_correct = neural_value_dict[layer][category]['correct_pictures'].__len__()
             number_of_wrong = neural_value_dict[layer][category]['wrong_pictures'].__len__()
@@ -96,9 +93,9 @@ def statistic_of_neural_value(id_dataset, neural_value):
     :return: non_class_l_average[] all_class_average
     """
 
-    layers = swin_config[id_dataset]['layers_of_getting_value']
-    neuron_number_of_each_layer = swin_config[id_dataset]['neurons_of_each_layer']
-    number_of_classes = num_of_labels[id_dataset]
+    layers = global_config.swin_config[id_dataset]['layers_of_getting_value']
+    neuron_number_of_each_layer = global_config.swin_config[id_dataset]['neurons_of_each_layer']
+    number_of_classes = global_config.num_of_labels[id_dataset]
 
     neural_value_statistic = {}
     for i in range(len(layers)):
@@ -170,8 +167,8 @@ def encode_abstraction(id_dataset, neural_value, train_dataset_statistic):
     # --------------------------selective  = [ output - average(-l) ] / average(all)------------------------# #
     # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-    layers = swin_config[id_dataset]['layers_of_getting_value']
-    neuron_number_list = swin_config[id_dataset]['neurons_of_each_layer']
+    layers = global_config.swin_config[id_dataset]['layers_of_getting_value']
+    neuron_number_list = global_config.swin_config[id_dataset]['neurons_of_each_layer']
     encode_layer_number = len(layers)
     print(f'selective rate: {global_config.selective_rate}')
     abstractions_dict = {}
@@ -181,8 +178,8 @@ def encode_abstraction(id_dataset, neural_value, train_dataset_statistic):
         all_class_avg = train_dataset_statistic[layers[k]]['all_class_average']
 
         combination_abstraction_each_category = {}
-        for category in range(num_of_labels[id_dataset]):
-            print('\rcategory: {} / {}'.format(category+1, num_of_labels[id_dataset]), end='')
+        for category in range(global_config.num_of_labels[id_dataset]):
+            print('\rcategory: {} / {}'.format(category+1, global_config.num_of_labels[id_dataset]), end='')
             neural_value_category = neural_value[layers[k]][category]
             correct_abstraction_list = []
             wrong_abstraction_list = []
@@ -203,7 +200,6 @@ def encode_abstraction(id_dataset, neural_value, train_dataset_statistic):
                     combination = encode_by_selective(image, label, global_config.selective_rate, neuron_number_list[k], non_class_l_avg, all_class_avg)
                     wrong_abstraction_list.append(combination)
 
-
             combination_abstraction = {'correct_pictures': correct_abstraction_list,
                                        'correct_predictions': neural_value_category['correct_predictions'],
                                        'wrong_pictures': wrong_abstraction_list,
@@ -217,11 +213,11 @@ def encode_abstraction(id_dataset, neural_value, train_dataset_statistic):
 
 
 def concatenate_data_between_layers(id_dataset, data_dict):
-    layers = swin_config[id_dataset]['layers_of_getting_value']
+    layers = global_config.swin_config[id_dataset]['layers_of_getting_value']
     abstraction_concatenated_dict = {}
-    for category in range(num_of_labels[id_dataset]):
+    for category in range(global_config.num_of_labels[id_dataset]):
         correct_data = []
-        if data_dict[layers[0]][category]['correct_pictures']:
+        if np.array(data_dict[layers[0]][category]['correct_pictures']).shape[0] != 0:
             for k in range(len(layers)):
                 correct_data.append(data_dict[layers[k]][category]['correct_pictures'])
             correct_data = np.concatenate(correct_data, axis=1)
@@ -229,7 +225,7 @@ def concatenate_data_between_layers(id_dataset, data_dict):
             correct_data = np.array([])
 
         wrong_data = []
-        if data_dict[layers[0]][category]['wrong_pictures']:
+        if np.array(data_dict[layers[0]][category]['wrong_pictures']).shape[0] != 0:
             for k in range(len(layers)):
                 wrong_data.append(data_dict[layers[k]][category]['wrong_pictures'])
             wrong_data = np.concatenate(wrong_data, axis=1)
@@ -288,12 +284,12 @@ def k_means(data, category_number):
 def statistic_distance(id_dataset, abstractions, cluster_centers):
 
     euclidean_distance = {}
-    for category in range(num_of_labels[id_dataset]):
+    for category in range(global_config.num_of_labels[id_dataset]):
         abstraction_category = abstractions[category]
         distance_category = {}
         if abstraction_category['correct_pictures'] is not None:
             correct_distance = []
-            abstraction_length = sum(swin_config[id_dataset]['neurons_of_each_layer'])
+            abstraction_length = sum(global_config.swin_config[id_dataset]['neurons_of_each_layer'])
             if abstraction_category['correct_pictures'].shape[0] == 0:
                 distance_category['correct_pictures'] = correct_distance
                 distance_category['correct_predictions'] = abstraction_category['correct_predictions']
@@ -313,7 +309,7 @@ def statistic_distance(id_dataset, abstractions, cluster_centers):
 
         if abstraction_category['wrong_pictures'] is not None:
             wrong_distance = []
-            abstraction_length = sum(swin_config[id_dataset]['neurons_of_each_layer'])
+            abstraction_length = sum(global_config.swin_config[id_dataset]['neurons_of_each_layer'])
             if abstraction_category['wrong_pictures'].shape[0] == 0:
                 distance_category['wrong_pictures'] = wrong_distance
                 distance_category['wrong_predictions'] = abstraction_category['wrong_predictions']
@@ -456,20 +452,3 @@ def sk_auc(distance_of_test_data, distance_of_bad_data, num_of_category):
 
     return auc_sum/count
 
-
-def t_sne_visualization(data, category_number):
-    colour_label = []
-    combination_abstraction = []
-    for category in range(category_number):
-        combination_abstraction.append(data[category]['correct_pictures'])
-        colour_label.extend([category for _ in range(data[category]['correct_pictures'].shape[0])])
-
-    combination_abstraction = np.concatenate(combination_abstraction, axis=0)
-    embedded = TSNE(n_components=2).fit_transform(combination_abstraction)
-    x_min, x_max = np.min(embedded, 0), np.max(embedded, 0)
-    embedded = embedded / (x_max - x_min)
-    plt.scatter(embedded[:, 0], embedded[:, 1],
-                c=(np.array(colour_label)/10.0), s=1)
-    plt.axis('off')
-    plt.show()
-    plt.close()

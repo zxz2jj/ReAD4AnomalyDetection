@@ -8,7 +8,6 @@ from datasets import load_dataset, Dataset
 from load_data import load_gtsrb, load_ood_data
 from ReAD import get_neural_value, statistic_of_neural_value, \
     encode_abstraction, concatenate_data_between_layers, k_means, statistic_distance, auroc, sk_auc
-from ReAD import t_sne_visualization
 from global_config import num_of_labels, swin_config
 
 
@@ -19,23 +18,22 @@ if __name__ == "__main__":
     # id_dataset = 'cifar10'
     # id_dataset = 'gtsrb'
 
-
     if id_dataset == 'mnist':
         row_names = ('image', 'label')
         finetuned_checkpoint = "./models/swin-finetuned-mnist/best"
-        dataset = load_dataset("./data/mnist/")
+        dataset = load_dataset("./data/mnist/mnist/")
         detector_path = './data/mnist/detector/'
 
     elif id_dataset == 'fashion_mnist':
         row_names = ('image', 'label')
         finetuned_checkpoint = "./models/swin-finetuned-fashion_mnist/best"
-        dataset = load_dataset("./data/fashion_mnist/")
+        dataset = load_dataset("./data/fashion_mnist/fashion_mnist/")
         detector_path = './data/fashion_mnist/detector/'
 
     elif id_dataset == 'cifar10':
         row_names = ('img', 'label')
         finetuned_checkpoint = "./models/swin-finetuned-cifar10/best"
-        dataset = load_dataset("./data/cifar10/")
+        dataset = load_dataset("./data/cifar10/cifar10/")
         detector_path = './data/cifar10/detector/'
 
     elif id_dataset == 'gtsrb':
@@ -91,13 +89,6 @@ if __name__ == "__main__":
                                                      train_dataset_statistic=train_nv_statistic)
         train_ReAD_concatenated = \
             concatenate_data_between_layers(id_dataset=id_dataset, data_dict=train_ReAD_abstractions)
-
-        # visualization will need some minutes. If you want to show the visualization, please run the following codes.
-        show_visualization = False
-        if show_visualization:
-            print('\nShow t-SNE visualization results on ReAD.')
-            t_sne_visualization(data=train_ReAD_concatenated,
-                                category_number=num_of_labels[id_dataset])
 
         print('\nK-Means Clustering of Combination Abstraction on train data:')
         k_means_centers = k_means(data=train_ReAD_concatenated,

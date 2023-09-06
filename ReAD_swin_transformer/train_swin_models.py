@@ -128,19 +128,19 @@ def train_models(id_dataset):
         row_names = ('image', 'label')
         pretrained_checkpoint = "./models/pretrained_model/swin-tiny-patch4-window7-224"
         finetuned_checkpoint = "./models/swin-finetuned-mnist/best"
-        dataset = load_dataset("./data/mnist/")
+        dataset = load_dataset("./data/mnist/mnist/")
 
     elif id_dataset == 'fashion_mnist':
         row_names = ('image', 'label')
         pretrained_checkpoint = "./models/pretrained_model/swin-tiny-patch4-window7-224"
         finetuned_checkpoint = "./models/swin-finetuned-fashion_mnist/best"
-        dataset = load_dataset("./data/fashion_mnist/")
+        dataset = load_dataset("./data/fashion_mnist/fashion_mnist/")
 
     elif id_dataset == 'cifar10':
         row_names = ('img', 'label')
         pretrained_checkpoint = "./models/pretrained_model/swin-tiny-patch4-window7-224"
         finetuned_checkpoint = "./models/swin-finetuned-cifar10/best"
-        dataset = load_dataset("./data/cifar10/")
+        dataset = load_dataset("./data/cifar10/cifar10/")
 
     elif id_dataset == 'gtsrb':
         row_names = ('image', 'label')

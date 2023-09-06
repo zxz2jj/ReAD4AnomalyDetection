@@ -8,10 +8,10 @@ from sklearn.utils import shuffle
 
 def load_ood_data(ood_dataset):
     if ood_dataset == 'MNIST':
-        data = load_dataset('./data/mnist/')
+        data = load_dataset('./data/mnist/mnist/')
         data = Dataset.from_dict({'image': data['test']['image']})
     elif ood_dataset == 'FMNIST':
-        data = load_dataset('./data/fashion_mnist/')
+        data = load_dataset('./data/fashion_mnist/fashion_mnist/')
         data = Dataset.from_dict({'image': data['test']['image']})
     elif ood_dataset == 'Omniglot':
         data = load_omniglot()
