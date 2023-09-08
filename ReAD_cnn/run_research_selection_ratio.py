@@ -16,11 +16,11 @@ import global_config
 
 if __name__ == "__main__":
     # conduct selection ratio research on adversarial/ood detection tasks
-    for_adversarial_detection = True
-    for_ood_detection = False
+    # for_adversarial_detection = True
+    # for_ood_detection = False
 
-    # for_adversarial_detection = False
-    # for_ood_detection = True
+    for_adversarial_detection = False
+    for_ood_detection = True
 
     if for_adversarial_detection is True:
         if os.path.exists(f'./data/fmnist/selection_ratio_adversarial.pkl') and \

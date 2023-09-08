@@ -16,6 +16,9 @@ from model_swin_transformer import SwinForImageClassification
 from train_swin_models import image_tokenizer
 from torch.utils.data import Subset
 
+os.environ["CUDA_VISIBLE_DEVICES"] = "1"
+os.environ["WANDB_DISABLED"] = "true"
+
 # swin-tiny config
 depths = [1, 2 + 1, 2 + 1, 6 + 1, 2]
 hidden_size = [[96],
@@ -45,6 +48,7 @@ def get_hidden_states(id_dataset, data, checkpoint, split):
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model.to(device)
+    pooler = torch.nn.AdaptiveAvgPool1d(1)
     for p, batch, label in zip(range(len(data['pixel_values'])), data['pixel_values'], data['label']):
         if torch.cuda.is_available():
             torch.cuda.empty_cache()
@@ -57,24 +61,24 @@ def get_hidden_states(id_dataset, data, checkpoint, split):
             correct_pooled_output.append(model.get_pooled_output().cpu().detach().numpy())
             for h, hidden_state in enumerate(hidden_states):
                 if not isinstance(hidden_state, tuple):
+                    hidden_state = torch.flatten(pooler(hidden_state.transpose(1, 2)), 1)
                     correct_hidden_states[h][0].append(hidden_state.cpu().detach().numpy())
                 else:
                     for s, state in enumerate(hidden_state):
+                        state = torch.flatten(pooler(state.transpose(1, 2)), 1)
                         correct_hidden_states[h][s].append(state.cpu().detach().numpy())
 
     if not os.path.exists(f'./data/{id_dataset}/hidden_states/'):
         os.mkdir(f'./data/{id_dataset}/hidden_states/')
     np.save(f'./data/{id_dataset}/hidden_states/{split}_predictions.npy', np.concatenate(correct_prediction))
     np.save(f'./data/{id_dataset}/hidden_states/{split}_pooled_output.npy', np.concatenate(correct_pooled_output))
-    pooler = torch.nn.AdaptiveAvgPool1d(1)
     for h, hidden_state in enumerate(correct_hidden_states):
         for s, state in enumerate(hidden_state):
-            state = torch.tensor(np.concatenate(state))
-            state = torch.flatten(pooler(state.transpose(1, 2)), 1)
+            state = np.concatenate(state)
             np.save(f'./data/{id_dataset}/hidden_states/{split}_hidden_states_stage_{h}_encoder_{s}_AvgPool.npy', state)
 
 
-def t_sne_visualization(hidden_states_data, abstraction_data, category_number, mode='show', save_path=None):
+def t_sne_visualization(hidden_states_data, abstraction_data, category_number, save_path, mode='show'):
     label_to_color = {0: 'red', 1: 'green', 2: 'blue', 3: 'orange', 4: 'pink',
                       5: 'grey', 6: 'black', 7: 'gold', 8: 'darkred', 9: 'chocolate',
                       10: 'saddlebrown', 11: 'olive', 12: 'yellow', 13: 'limegreen', 14: 'turquoise',
@@ -98,15 +102,15 @@ def t_sne_visualization(hidden_states_data, abstraction_data, category_number, m
 
     hidden_states = np.concatenate(hidden_states, axis=0)
     hidden_states_embedded = TSNE(n_components=2).fit_transform(hidden_states)
-    max1, min1 = np.min(hidden_states_embedded, 0), np.max(hidden_states_embedded, 0)
+    max1, min1 = np.max(hidden_states_embedded, 0), np.min(hidden_states_embedded, 0)
     hidden_states_embedded = hidden_states_embedded / (max1 - min1)
 
     abstraction = np.concatenate(abstraction, axis=0)
     abstraction_embedded = TSNE(n_components=2).fit_transform(abstraction)
-    max2, min2 = np.min(abstraction_embedded, 0), np.max(abstraction_embedded, 0)
+    max2, min2 = np.max(abstraction_embedded, 0), np.min(abstraction_embedded, 0)
     abstraction_embedded = abstraction_embedded / (max2 - min2)
 
-    fig = plt.figure()
+    fig = plt.figure(figsize=(15, 7))
     ax1 = fig.add_subplot(121)
     ax1.scatter(hidden_states_embedded[:, 0], hidden_states_embedded[:, 1], c=colour_label_str, s=1)
     ax1.set_title('Hidden States')
@@ -116,16 +120,17 @@ def t_sne_visualization(hidden_states_data, abstraction_data, category_number, m
     if mode == 'show':
         plt.show()
     elif mode == 'save':
-        plt.savefig(save_path)
+        plt.savefig(save_path + '.png')
+        plt.savefig(save_path + '.pdf')
     plt.close()
 
 
 if __name__ == '__main__':
 
     # dataset_name = 'mnist'
-    dataset_name = 'fashion_mnist'
+    # dataset_name = 'fashion_mnist'
     # dataset_name = 'cifar10'
-    # dataset_name = 'gtsrb'
+    dataset_name = 'gtsrb'
 
     hidden_states_is_existed = True
     for k, depth in enumerate(depths):
@@ -182,7 +187,7 @@ if __name__ == '__main__':
 
     for k, depth in enumerate(depths):
         for d in range(depth):
-            print(f'Stage:{k}, Encoder:{d}')
+            print(f'-----------------------------------Stage:{k}, Encoder:{d}----------------------------------------')
             global_config.swin_config[dataset_name]['neurons_of_each_layer'] = [hidden_size[k][d]]
 
             print('Hidden States of Training data:')
@@ -224,7 +229,10 @@ if __name__ == '__main__':
 
             t_sne_visualization(hidden_states_data=test_hidden_states_concatenated,
                                 abstraction_data=test_ReAD_concatenated,
-                                category_number=num_of_labels[dataset_name], mode='show', save_path=None)
+                                category_number=num_of_labels[dataset_name],
+                                save_path=f'./data/{dataset_name}/visualization/Stage_{k}_Encoder_{d}',
+                                # mode='show',
+                                mode='save')
 
 
 
