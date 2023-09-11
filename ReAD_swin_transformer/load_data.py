@@ -45,6 +45,7 @@ def load_omniglot():
                 img = Image.open(img_path)
                 data.append(img.copy())
                 img.close()
+    print('\n')
 
     return Dataset.from_dict({'image': data})
 
@@ -58,6 +59,7 @@ def load_uniform_noise():
         img = Image.open(img_path)
         data.append(img.copy())
         img.close()
+    print('\n')
 
     return Dataset.from_dict({'image': data})
 
@@ -71,6 +73,7 @@ def load_gaussian_noise():
         img = Image.open(img_path)
         data.append(img.copy())
         img.close()
+    print('\n')
 
     return Dataset.from_dict({'image': data})
 
@@ -84,6 +87,7 @@ def load_tiny_imagenet():
         img = Image.open(img_path)
         data.append(img.copy())
         img.close()
+    print('\n')
 
     return Dataset.from_dict({'image': data})
 
@@ -97,6 +101,7 @@ def load_isun():
         img = Image.open(img_path)
         data.append(img.copy())
         img.close()
+    print('\n')
 
     return Dataset.from_dict({'image': data})
 
@@ -110,6 +115,7 @@ def load_lsun():
         img = Image.open(img_path)
         data.append(img.copy())
         img.close()
+    print('\n')
 
     return Dataset.from_dict({'image': data})
 

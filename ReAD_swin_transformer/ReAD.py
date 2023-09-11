@@ -433,20 +433,20 @@ def auroc(distance_of_train_data, distance_of_normal_data, distance_of_bad_data,
     return auc_of_roc
 
 
-def sk_auc(distance_of_test_data, distance_of_bad_data, num_of_category):
+def sk_auc(id_dataset, distance_of_test_data, distance_of_bad_data):
 
     auc_sum = 0
     count = 0
-    for c in range(num_of_category):
+    for c in range(global_config.num_of_labels[id_dataset]):
         if not distance_of_bad_data[c]['wrong_pictures']:
-            print('{}/{}: AUROC: {}'.format(c, num_of_category, 'No examples'))
+            print('{}/{}: AUROC: {}'.format(c, global_config.num_of_labels[id_dataset], 'No examples'))
             continue
         y_true = [0 for _ in range(len(distance_of_test_data[c]['correct_pictures']))] + \
                  [1 for _ in range(len(distance_of_bad_data[c]['wrong_pictures']))]
         y_score = distance_of_test_data[c]['correct_pictures'] + distance_of_bad_data[c]['wrong_pictures']
         fpr, tpr, threshold = roc_curve(y_true, y_score)
         roc_auc = auc(fpr, tpr)
-        print('{}/{}: AUROC: {:.6f}'.format(c, num_of_category, roc_auc))
+        print('{}/{}: AUROC: {:.6f}'.format(c, global_config.num_of_labels[id_dataset], roc_auc))
         auc_sum += roc_auc
         count += 1
 

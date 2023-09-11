@@ -11,6 +11,10 @@ from ReAD import get_neural_value, statistic_of_neural_value, \
 from global_config import num_of_labels, swin_config
 
 
+os.environ["CUDA_VISIBLE_DEVICES"] = "1"
+os.environ["WANDB_DISABLED"] = "true"
+
+
 if __name__ == "__main__":
 
     id_dataset = 'mnist'
