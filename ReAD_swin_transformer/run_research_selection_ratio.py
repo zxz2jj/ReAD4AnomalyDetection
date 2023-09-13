@@ -34,6 +34,7 @@ if __name__ == "__main__":
         gtsrb_performance = pickle.load(file4)
         ood = ['FMNIST', 'MNIST','Omniglot', 'TinyImageNet', 'LSUN', 'iSUN', 'UniformNoise', 'GuassianNoise']
 
+        fig = plt.figure(figsize=(9, 9))
         x = [0.01*a for a in range(1, 101)]
         for o in ood:
             if mnist_performance[o]:
@@ -44,13 +45,14 @@ if __name__ == "__main__":
                 plt.plot(x, cifar10_performance[o], label=f'Cifar10 vs {o}')
             if gtsrb_performance[o]:
                 plt.plot(x, gtsrb_performance[o], label=f'GTSRB vs {o}')
-        plt.legend(loc='lower right')
-        plt.tick_params(labelsize=15)
+        plt.legend(loc='lower right', prop={'size': 13})
+        plt.tick_params(labelsize=20)
         plt.ylim(0.8, 1)
         ax = plt.gca()
-        y_major_locator = plt.MultipleLocator(0.02)
+        y_major_locator = plt.MultipleLocator(0.05)
         ax.yaxis.set_major_locator(y_major_locator)
         ax.vlines(0.6, 0.7, 1.0, linestyles='--', colors='darkgray')
+        plt.savefig('./data/research_selection_ratio_ood.pdf')
         plt.show()
         exit()
 

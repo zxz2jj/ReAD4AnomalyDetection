@@ -59,10 +59,10 @@ def get_confidence(id_dataset, data, checkpoint, is_ood=False, ood_name=''):
 
 if __name__ == "__main__":
 
-    dataset_name = 'mnist'
+    # dataset_name = 'mnist'
     # dataset_name = 'fashion_mnist'
     # dataset_name = 'cifar10'
-    # dataset_name = 'gtsrb'
+    dataset_name = 'gtsrb'
 
     if dataset_name == 'mnist':
         row_names = ('image', 'label')
