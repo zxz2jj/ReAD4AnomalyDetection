@@ -175,6 +175,12 @@ ReAD_swin_transformer/models/swin-finetuned-fashion_mnist/
 ReAD_swin_transformer/models/swin-finetuned-cifar10/
 ReAD_swin_transformer/models/swin-finetuned-gtsrb/
 
+ReAD_transformer/models/pretrained_model/
+ReAD_transformer/models/roberta-base-finetuned-sst2/
+ReAD_transformer/models/roberta-base-finetuned-imdb/
+ReAD_transformer/models/roberta-base-finetuned-newsgroup/
+ReAD_transformer/models/roberta-base-finetuned-trec/
+
 # data
 ReAD_cnn/data/mnist/
 ReAD_cnn/data/fmnist/
@@ -188,5 +194,12 @@ ReAD_swin_transformer/data/fashion_mnist/
 ReAD_swin_transformer/data/cifar10/
 ReAD_swin_transformer/data/gtsrb/
 ReAD_swin_transformer/data/public/
+
+ReAD_transformer/data/imdb/
+ReAD_transformer/data/newsgroup/
+ReAD_transformer/data/sst2/
+ReAD_transformer/data/trec/
+ReAD_transformer/data/public/
+
 
 

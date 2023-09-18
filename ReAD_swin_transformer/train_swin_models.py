@@ -168,7 +168,7 @@ def train_models(id_dataset):
                               output_hidden_states=False,
                               mode='test')
         metrics = trainer.evaluate()
-        trainer.log_metrics('eval', metrics)
+        trainer.log_metrics('test', metrics)
 
     else:
         train_dataset = image_tokenizer(data=rename_train_data, model_checkpoint=pretrained_checkpoint, mode='train')
