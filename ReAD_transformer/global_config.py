@@ -6,25 +6,33 @@ num_of_labels = {
 }
 
 roberta_config = {
-    'mnist': {
+    'sst2': {
         'layers_of_getting_value': [-2],
         'neurons_of_each_layer': [768],
-        'ood_settings': ['FMNIST', 'Omniglot', 'UniformNoise', 'GuassianNoise']
+        'ood_settings': ['trec', 'newsgroup', 'mnli', 'rte', 'wmt16', 'multi30k', 'noise'],
+        'adversarial_settings': ['SCPNAttacker', 'GANAttacker', 'TextFoolerAttacker',
+                                 'PWWSAttacker', 'TextBuggerAttacker', 'VIPERAttacker']
     },
-    'fashion_mnist': {
+    'imdb': {
         'layers_of_getting_value': [-2],
         'neurons_of_each_layer': [768],
-        'ood_settings': ['MNIST', 'Omniglot', 'UniformNoise', 'GuassianNoise'],
+        'ood_settings': ['trec', 'newsgroup', 'mnli', 'rte', 'wmt16', 'multi30k', 'noise'],
+        'adversarial_settings': ['SCPNAttacker', 'GANAttacker', 'TextFoolerAttacker',
+                                 'PWWSAttacker', 'TextBuggerAttacker', 'VIPERAttacker']
     },
-    'cifar10': {
+    'trec': {
         'layers_of_getting_value': [-2],
         'neurons_of_each_layer': [768],
-        'ood_settings': ['TinyImageNet', 'LSUN', 'iSUN', 'UniformNoise', 'GuassianNoise']
+        'ood_settings': ['sst2', 'imdb', 'newsgroup', 'mnli', 'rte', 'wmt16', 'multi30k', 'noise'],
+        'adversarial_settings': ['SCPNAttacker', 'GANAttacker', 'TextFoolerAttacker',
+                                 'PWWSAttacker', 'TextBuggerAttacker', 'VIPERAttacker']
     },
-    'gtsrb': {
+    'newsgroup': {
         'layers_of_getting_value': [-2],
         'neurons_of_each_layer': [768],
-        'ood_settings': ['TinyImageNet', 'LSUN', 'iSUN', 'UniformNoise', 'GuassianNoise']
+        'ood_settings': ['sst2', 'imdb', 'trec', 'mnli', 'rte', 'wmt16', 'multi30k'],
+        'adversarial_settings': ['SCPNAttacker', 'GANAttacker', 'TextFoolerAttacker',
+                                 'PWWSAttacker', 'TextBuggerAttacker', 'VIPERAttacker']
     },
 }
 

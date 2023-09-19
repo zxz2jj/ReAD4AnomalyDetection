@@ -5,7 +5,7 @@ import os
 import numpy as np
 
 from global_config import num_of_labels
-from roberta_model import RobertaForSequenceClassification
+from mode_roberta import RobertaForSequenceClassification
 from load_data import load_data
 from datasets import load_metric
 
@@ -122,9 +122,9 @@ def train_models(id_dataset):
 
 
 if __name__ == '__main__':
-    # id_data = "sst2"
+    id_data = "sst2"
     # id_data = "imdb"
-    id_data = "trec"
+    # id_data = "trec"
     # id_data = 'newsgroup'
 
     train_models(id_data)

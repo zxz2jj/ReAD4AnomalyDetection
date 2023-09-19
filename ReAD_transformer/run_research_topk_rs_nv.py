@@ -1,17 +1,11 @@
-import matplotlib
-matplotlib.get_backend()
-import matplotlib.pyplot as plt
 import os.path
-import tensorflow as tf
+import numpy as np
 import math
 import pickle
-import numpy as np
 
-
-from ReAD import classify_id_pictures
-from ReAD import get_neural_value, statistic_of_neural_value
-from load_data import load_mnist
 from global_config import num_of_labels, selective_rate
+from ReAD import statistic_of_neural_value
+import matplotlib.pyplot as plt
 
 
 def encode_by_selective(image_neural_value, label, encode_rate, number_of_neuron, non_class_l_average, topk,
@@ -52,20 +46,20 @@ def encode_by_selective(image_neural_value, label, encode_rate, number_of_neuron
     top_k_ReA_index.extend([sort_by_sel[-k][0] for k in range(1, topk+1, 1)])
     top_k_ReD_index.extend([sort_by_sel[k][0] for k in range(topk)])
 
-    dict_neuron_value = {}
+    dict_neuronvalue = {}
     for index in range(len(selective)):
-        dict_neuron_value[index] = image_neural_value[index]
-    sort_by_neuron_value = sorted(dict_neuron_value.items(), key=lambda x: x[1])
-    top_k_NA_index = []
-    top_k_ND_index = []
-    top_k_NA_index.extend([sort_by_neuron_value[-k][0] for k in range(1, topk+1, 1)])
-    top_k_ND_index.extend([sort_by_neuron_value[k][0] for k in range(topk)])
+        dict_neuronvalue[index] = image_neural_value[index]
+    sort_by_neuronvalue = sorted(dict_neuronvalue.items(), key=lambda x: x[1])
+    top_k_NVA_index = []
+    top_k_NVD_index = []
+    top_k_NVA_index.extend([sort_by_neuronvalue[-k][0] for k in range(1, topk+1, 1)])
+    top_k_NVD_index.extend([sort_by_neuronvalue[k][0] for k in range(topk)])
 
     return combination_code, only_active_code, only_deactive_code, \
-        top_k_ReA_index, top_k_ReD_index, top_k_NA_index, top_k_ND_index, selective
+        top_k_ReA_index, top_k_ReD_index, top_k_NVA_index, top_k_NVD_index, selective
 
 
-def encode_abstraction_for_statistic(id_dataset, neural_value, train_neural_value_statistic, statistic_layers):
+def encode_ReAD_for_statistic(id_dataset, neural_value, train_neural_value_statistic, statistic_layers):
 
     categories = num_of_labels[id_dataset]
     encode_layer_number = statistic_layers['fully_connected_layers_number']
@@ -92,8 +86,8 @@ def encode_abstraction_for_statistic(id_dataset, neural_value, train_neural_valu
                         8: {'ReA': [], 'ReD': [], 'NVA': [], 'NVD': []},
                         9: {'ReA': [], 'ReD': [], 'NVA': [], 'NVD': []},
                         }
-        for top_i in range(1, 40):
-            print(f'----------------------------top:{top_i}----------------------------------------------')
+        for topk in range(1, 40):
+            print(f'----------------------------top:{topk}----------------------------------------------')
             for category in range(categories):
                 print('category: {} / {}'.format(category+1, categories))
                 neural_value_category = neural_value[layers[k]][category]
@@ -103,16 +97,16 @@ def encode_abstraction_for_statistic(id_dataset, neural_value, train_neural_valu
                 statistic_top_k_NVA = [0 for _ in range(neuron_number_list[k])]
                 statistic_top_k_NVD = [0 for _ in range(neuron_number_list[k])]
 
-                if neural_value_category['correct_pictures'] is not None:
-                    if neural_value_category['correct_pictures'].shape[0] == 0:
+                if neural_value_category['correct_examples'] is not None:
+                    if neural_value_category['correct_examples'].shape[0] == 0:
                         pass
                     else:
                         for image, label in \
-                                zip(neural_value_category['correct_pictures'], neural_value_category['correct_prediction']):
+                                zip(neural_value_category['correct_examples'], neural_value_category['correct_predictions']):
                             combination_code, only_active_code, only_deactive_code, \
                                 topk_ReA_index, topk_ReD_index, topk_NVA_index, topk_NVD_index, selectivity = \
                                 encode_by_selective(image, label, selective_rate, neuron_number_list[k],
-                                                    non_class_l_avg, top_i, all_class_avg)
+                                                    non_class_l_avg, topk, all_class_avg)
 
                             for index in topk_ReA_index:
                                 statistic_top_k_ReA[index] += 1
@@ -122,11 +116,11 @@ def encode_abstraction_for_statistic(id_dataset, neural_value, train_neural_valu
                                 statistic_top_k_NVA[index] += 1
                             for index in topk_NVD_index:
                                 statistic_top_k_NVD[index] += 1
-                            for i in range(len(selectivity)):
-                                if selectivity[i] > 0:
-                                    statistic_selectivity[i][category][0] += 1
+                            for s in range(len(selectivity)):
+                                if selectivity[s] > 0:
+                                    statistic_selectivity[s][category][0] += 1
                                 else:
-                                    statistic_selectivity[i][category][1] += 1
+                                    statistic_selectivity[s][category][1] += 1
 
                     print(f'ReA: index:{statistic_top_k_ReA.index(max(statistic_top_k_ReA))},'
                           f'percentage: {max(statistic_top_k_ReA)/sum(statistic_top_k_ReA)},'
@@ -146,7 +140,7 @@ def encode_abstraction_for_statistic(id_dataset, neural_value, train_neural_valu
                     topk_neurons[category]['NVA'].append(len(statistic_top_k_NVA) - statistic_top_k_NVA.count(0))
                     topk_neurons[category]['NVD'].append(len(statistic_top_k_NVD) - statistic_top_k_NVD.count(0))
 
-        file = open(f'./data/{id_dataset}/layer_{layers[k]}_topk_neurons.pkl', 'wb')
+        file = open(f'./data/{id_dataset}/layer_fc_topk_neurons.pkl', 'wb')
         pickle.dump(topk_neurons, file)
 
     return combination_abstraction_dict
@@ -154,52 +148,67 @@ def encode_abstraction_for_statistic(id_dataset, neural_value, train_neural_valu
 
 if __name__ == '__main__':
 
-    dataset = 'mnist'
-    model_path = './models/lenet_mnist/'
-    detector_path = './data/mnist/detector/'
-    x_train, y_train, x_test, y_test = load_mnist()
+    dataset = 'imdb'
+    hidden_states_path = f'./data/{dataset}/hidden_states/'
+    detector_path = f'./data/{dataset}/detector/'
+    num_of_category = num_of_labels[dataset]
 
-    if not os.path.exists(f'./data/{dataset}/layer_-6_topk_neurons.pkl'):
-        train_picture_classified = classify_id_pictures(id_dataset=dataset, dataset=x_train,
-                                                        labels=tf.argmax(y_train, axis=1), model_path=model_path)
-        test_picture_classified = classify_id_pictures(id_dataset=dataset, dataset=x_test,
-                                                       labels=tf.argmax(y_test, axis=1), model_path=model_path)
-        print('\nGet neural value of train dataset:')
-        train_picture_neural_value = get_neural_value(id_dataset=dataset, model_path=model_path,
-                                                      pictures_classified=train_picture_classified)
-        print('\nGet neural value of train dataset:')
-        test_picture_neural_value = get_neural_value(id_dataset=dataset, model_path=model_path,
-                                                     pictures_classified=test_picture_classified)
-        print('\nStatistic of train data neural value:')
-        train_nv_statistic = statistic_of_neural_value(id_dataset=dataset,
-                                                       neural_value=train_picture_neural_value)
-        print('finished!')
+    if not os.path.exists(f'./data/{dataset}/layer_fc_topk_neurons.pkl'):
+        if os.path.exists(detector_path + 'train_nv_statistic.pkl'):
+            train_nv_statistic = np.load(detector_path + 'train_nv_statistic.pkl')
+        else:
+            layer_neural_value = {}
+            train_neural_value = {-1: layer_neural_value}
+            train_fc_hidden_states = np.load(hidden_states_path+'train_fc_hidden_states.npy')
+            train_predictions = np.load(hidden_states_path+'train_predictions.npy')
+            for i in range(num_of_category):
+                print('Class {}: {}'.format(i, sum(train_predictions == i)))
+                hidden_states_category = {'correct_examples': train_fc_hidden_states[(train_predictions == i)],
+                                          'correct_predictions': train_predictions[(train_predictions == i)],
+                                          'wrong_examples': None,
+                                          'wrong_predictions': None}
+                layer_neural_value[i] = hidden_states_category
+
+            print('\nStatistic of train data neural value:')
+            train_nv_statistic = statistic_of_neural_value(dataset, train_neural_value)
+
+        layer_hidden_states = {}
+        test_hidden_states = {-1: layer_hidden_states}
+        test_fc_hidden_states = np.load(hidden_states_path + 'test_fc_hidden_states.npy')
+        test_predictions = np.load(hidden_states_path + 'test_predictions.npy')
+        for i in range(num_of_category):
+            print('Class {}: {}'.format(i, sum(test_predictions == i)))
+            hidden_states_category = {'correct_examples': test_fc_hidden_states[(test_predictions == i)],
+                                      'correct_predictions': test_predictions[(test_predictions == i)],
+                                      'wrong_examples': None,
+                                      'wrong_predictions': None}
+            layer_hidden_states[i] = hidden_states_category
 
         research_layers = {'fully_connected_layers_number': 1,
-                           'fully_connected_layers': [-6],
-                           'neuron_number_of_fully_connected_layers': [80]}
+                           'fully_connected_layers': [-2],
+                           'neuron_number_of_fully_connected_layers': [768]}
 
-        train_picture_combination_abstraction = encode_abstraction_for_statistic(
-            id_dataset=dataset, neural_value=test_picture_neural_value,
-            train_neural_value_statistic=train_nv_statistic, statistic_layers=research_layers)
+        test_ReAD_abstraction = encode_ReAD_for_statistic(id_dataset=dataset, neural_value=test_hidden_states,
+                                                          train_neural_value_statistic=train_nv_statistic,
+                                                          statistic_layers=research_layers)
+    else:
+        topk_file = open(f'./data/{dataset}/layer_-1_topk_neurons.pkl', 'rb')
+        topk_file_content = pickle.load(topk_file)
+        topk_neurons_by_class = topk_file_content[1]
 
-    topk_file = open(f'./data/mnist/layer_-6_topk_neurons.pkl', 'rb')
-    topk_file_content = pickle.load(topk_file)
-    topk_neurons_by_class = topk_file_content[9]
-
-    x = [i for i in range(1, 31)]
-    plt.plot(x, topk_neurons_by_class['ReA'][:30], color='red', marker='o',
-             linestyle='-', label='ReA')
-    plt.plot(x, topk_neurons_by_class['NVA'][:30], color='red', marker='^',
-             linestyle='--', label='NA')
-    plt.plot(x, topk_neurons_by_class['ReD'][:30], color='green', marker='o',
-             linestyle='-', label='ReD')
-    plt.plot(x, topk_neurons_by_class['NVD'][:30], color='green', marker='^',
-             linestyle='--', label='ND')
-    plt.legend(prop={'size': 15})
-    plt.tick_params(labelsize=15)
-    plt.title('Class 9', size=18, x=0.5, y=-0.2)
-    plt.show()
+        x = [i for i in range(1, 31)]
+        plt.plot(x, topk_neurons_by_class['ReA'][:30], color='red', marker='o',
+                 linestyle='-', label='ReA')
+        plt.plot(x, topk_neurons_by_class['NVA'][:30], color='red', marker='^',
+                 linestyle='--', label='NA')
+        plt.plot(x, topk_neurons_by_class['ReD'][:30], color='green', marker='o',
+                 linestyle='-', label='ReD')
+        plt.plot(x, topk_neurons_by_class['NVD'][:30], color='green', marker='^',
+                 linestyle='--', label='ND')
+        plt.legend(prop={'size': 15})
+        plt.tick_params(labelsize=15)
+        plt.title('Class 1', size=18, x=0.5, y=-0.2)
+        plt.show()
 
 
 

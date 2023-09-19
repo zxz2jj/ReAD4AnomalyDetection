@@ -168,9 +168,15 @@ def load_noise():
     return ood_data
 
 
-def load_clean_adv_data(path, attack):
-    dataset_name = path.split('/')[-3]
-    file = open(path + f'{dataset_name}_{attack}_result.pkl', 'rb')
+def dataset_mapping(x):
+    return {
+        "x": x['text'],
+        "y": x['label'],
+    }
+
+
+def load_clean_adv_data(clean_dataset, attack):
+    file = open(f'./data/{clean_dataset}/adversarial/{clean_dataset}_{attack}_result.pkl', 'rb')
     data = pickle.load(file)
     clean_data = {'text': data['clean'], 'label': data['label']}
     adv_data = {'text': data['adversarial'], 'target': data['target']}
@@ -184,7 +190,7 @@ def load_clean_adv_data(path, attack):
 
 if __name__ == "__main__":
 
-    datasets = load_data('newsgroup')
+    datasets = load_data('sst2')
 
     # datasets = dataset_2_wordlist(datasets)
 
