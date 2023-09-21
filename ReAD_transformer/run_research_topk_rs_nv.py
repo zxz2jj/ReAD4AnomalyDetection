@@ -159,7 +159,7 @@ if __name__ == '__main__':
         else:
             layer_neural_value = {}
             train_neural_value = {-1: layer_neural_value}
-            train_fc_hidden_states = np.load(hidden_states_path+'train_fc_hidden_states.npy')
+            train_fc_hidden_states = np.load(hidden_states_path+'train_fc_hidden_state.npy')
             train_predictions = np.load(hidden_states_path+'train_predictions.npy')
             for i in range(num_of_category):
                 print('Class {}: {}'.format(i, sum(train_predictions == i)))
@@ -174,7 +174,7 @@ if __name__ == '__main__':
 
         layer_hidden_states = {}
         test_hidden_states = {-1: layer_hidden_states}
-        test_fc_hidden_states = np.load(hidden_states_path + 'test_fc_hidden_states.npy')
+        test_fc_hidden_states = np.load(hidden_states_path + 'test_fc_hidden_state.npy')
         test_predictions = np.load(hidden_states_path + 'test_predictions.npy')
         for i in range(num_of_category):
             print('Class {}: {}'.format(i, sum(test_predictions == i)))

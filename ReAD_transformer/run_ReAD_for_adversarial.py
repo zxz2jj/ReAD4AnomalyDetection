@@ -87,7 +87,7 @@ if __name__ == "__main__":
         print(f'\nATTACK: {attack}')
         clean_data, adv_data = load_clean_adv_data(clean_dataset=clean_dataset, attack=attack)
         clean_data = sentence_tokenizer(clean_data, finetuned_checkpoint)
-        adv_data = sentence_tokenizer((adv_data, finetuned_checkpoint))
+        adv_data = sentence_tokenizer(adv_data, finetuned_checkpoint)
 
         print('\nGet neural value of CLEAN data:')
         clean_picture_neural_value = get_neural_value(id_dataset=clean_dataset, dataset=clean_data,

@@ -30,7 +30,7 @@ roberta_config = {
     'newsgroup': {
         'layers_of_getting_value': [-2],
         'neurons_of_each_layer': [768],
-        'ood_settings': ['sst2', 'imdb', 'trec', 'mnli', 'rte', 'wmt16', 'multi30k'],
+        'ood_settings': ['sst2', 'imdb', 'trec', 'mnli', 'rte', 'wmt16', 'multi30k', 'noise'],
         'adversarial_settings': ['SCPNAttacker', 'GANAttacker', 'TextFoolerAttacker',
                                  'PWWSAttacker', 'TextBuggerAttacker', 'VIPERAttacker']
     },
