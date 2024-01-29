@@ -13,13 +13,13 @@ task_to_keys = {
 
 def load_data(task):
     if task in ['imdb']:
-        dataset = load_dataset('imdb')
+        dataset = load_dataset('./data/imdb/imdb', cache_dir='./dataset/')
         return dataset
     elif task in ['sst2']:
-        dataset = load_dataset('gpt3mix/sst2')
+        dataset = load_dataset('./data/sst2/sst2', cache_dir='./dataset/')
         return dataset
     elif task in ['trec']:
-        data = load_dataset('trec')
+        data = load_dataset('./data/trec/trec', cache_dir='./dataset/')
         rename_train = Dataset.from_dict({'text': data['train']['text'], 'label': data['train']['label-coarse']})
         rename_test = Dataset.from_dict({'text': data['test']['text'], 'label': data['test']['label-coarse']})
         dataset = DatasetDict({'train': rename_train, 'test': rename_test})
@@ -100,21 +100,14 @@ def load_20ng():
 
 
 def load_glue(task):
-    data = load_dataset("glue", task)
-
-    if task == 'mnli':
-        test_dataset = [d for d in data['test_matched']] + [d for d in data['test_mismatched']]
-        ood_data = {'test': test_dataset}
-    elif task == 'rte':
-        ood_data = {'test': data['test']}
-    else:
-        ood_data = None
+    data = load_dataset(f"./data/public/glue/{task}", cache_dir='./dataset/')
+    ood_data = {'test': data['test']}
 
     return ood_data
 
 
 def load_wmt16():
-    data = load_dataset('wmt16', 'de-en')
+    data = load_dataset('./data/public/wmt16', 'de-en', cache_dir='./dataset/')
     test_dataset = [d['translation'] for d in data['test']]
     ood_data = {'test': test_dataset}
 
@@ -123,9 +116,9 @@ def load_wmt16():
 
 def load_multi30k():
     test_dataset = []
-    for file_name in ('./data/multi30k/test_2016_flickr.en',
-                      './data/multi30k/test_2017_mscoco.en',
-                      './data/multi30k/test_2018_flickr.en'):
+    for file_name in ('./data/public/multi30k/test_2016_flickr.en',
+                      './data/public/multi30k/test_2017_mscoco.en',
+                      './data/public/multi30k/test_2018_flickr.en'):
         with open(file_name, 'r') as fh:
             for line in fh:
                 line = line.strip()
@@ -168,13 +161,6 @@ def load_noise():
     return ood_data
 
 
-def dataset_mapping(x):
-    return {
-        "x": x['text'],
-        "y": x['label'],
-    }
-
-
 def load_clean_adv_data(clean_dataset, attack):
     file = open(f'./data/{clean_dataset}/adversarial/{clean_dataset}_{attack}_result.pkl', 'rb')
     data = pickle.load(file)
@@ -190,23 +176,15 @@ def load_clean_adv_data(clean_dataset, attack):
 
 if __name__ == "__main__":
 
-    datasets = load_data('sst2')
-
-    # datasets = dataset_2_wordlist(datasets)
-
-
-    # data = load_data('wmt16')
-    # print('aaaa')
-
-    # dataset.save_to_disk('./data/multi30k/')
-    # dataset = DatasetDict()
-    # a = dataset.load_from_disk('./data/multi30k/')
-    # b = a['train']
-    # c = a['test']
-    # print('1111')
-
-    # dataset = load_noise()
-    # print('aaa')
+    load_data('imdb')
+    load_data('sst2')
+    load_data('trec')
+    load_data('newsgroup')
+    load_data('noise')
+    load_data('mnli')
+    load_data('rte')
+    load_data('wmt16')
+    load_data('multi30k')
 
     # load_clean_adv_data(path='./data/sst2/Adversarial/', attack='SCPNAttacker')
 

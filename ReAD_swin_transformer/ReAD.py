@@ -1,10 +1,10 @@
 import numpy as np
 import math
 import torch
+from tqdm import tqdm
 from sklearn.cluster import KMeans
 from sklearn import metrics
-from sklearn.metrics import auc, roc_curve
-from torch.utils.data import Subset
+from sklearn.metrics import auc, roc_curve, roc_auc_score
 from transformers import SwinConfig, SwinForImageClassification
 
 import global_config
@@ -16,13 +16,11 @@ def get_neural_value(id_dataset, dataset, checkpoint, is_ood=False):
     config = SwinConfig.from_pretrained(checkpoint, num_labels=global_config.num_of_labels[id_dataset],
                                         output_hidden_states=False, ignore_mismatched_sizes=True)
     model = SwinForImageClassification.from_pretrained(checkpoint, config=config)
+    if not is_ood:
+        labels = dataset['label']
 
     dataset = image_tokenizer(data=dataset, model_checkpoint=checkpoint, mode='test')
-    dataset = Subset(dataset, range(0, dataset.shape[0])).__getitem__([_ for _ in range(dataset.shape[0])])
-    # dataset = Subset(dataset, range(0, 100)).__getitem__([_ for _ in range(100)])
-
     layers = global_config.swin_config[id_dataset]['layers_of_getting_value']
-
     neural_value_dict = {}
     for layer in layers:
         neural_value_category = {}
@@ -34,22 +32,29 @@ def get_neural_value(id_dataset, dataset, checkpoint, is_ood=False):
     neural_value_list = list()
     predictions_list = list()
 
+    batch_size = 64
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    print(f'Device: {device}, BatchSize: {batch_size}')
     model.to(device)
-    for i, batch in zip(range(len(dataset['pixel_values'])), dataset['pixel_values']):
-        if torch.cuda.is_available():
-            torch.cuda.empty_cache()
-        print('\rImage: {} / {}'.format(i + 1, len(dataset['pixel_values'])), end='')
-        outputs = model(torch.unsqueeze(batch, 0).to(device))
+    batch_index_start = 0
+    batch_index_end = batch_size
+    for _ in tqdm(range(math.ceil(dataset.shape[0] / batch_size))):
+        batch = dataset.__getitem__([_ for _ in range(batch_index_start, batch_index_end)])
+        pixel_values = torch.stack(batch['pixel_values'])
+        outputs = model(pixel_values.to(device))
         prediction = torch.argmax(outputs.logits, 1)
         neural_value_list.append(model.get_pooled_output().cpu().detach().numpy())
         predictions_list.append(prediction.cpu().detach().numpy())
+        batch_index_start = batch_index_end
+        batch_index_end = (batch_index_end + batch_size) \
+            if (batch_index_end + batch_size) < dataset.shape[0] else dataset.shape[0]
+    neural_value = np.concatenate(neural_value_list)
+    predictions = np.concatenate(predictions_list)
 
     for layer in layers:
         print('\nget neural value in layer: {}'.format(layer))
         if not is_ood:
-            labels = dataset['label']
-            for nv, prediction, label in zip(neural_value_list, predictions_list, labels):
+            for nv, prediction, label in zip(neural_value, predictions, labels):
                 if prediction == label:
                     neural_value_dict[layer][int(prediction)]['correct_pictures'].append(nv)
                     neural_value_dict[layer][int(prediction)]['correct_predictions'].append(prediction)
@@ -57,7 +62,7 @@ def get_neural_value(id_dataset, dataset, checkpoint, is_ood=False):
                     neural_value_dict[layer][int(prediction)]['wrong_pictures'].append(nv)
                     neural_value_dict[layer][int(prediction)]['wrong_predictions'].append(prediction)
         elif is_ood:
-            for nv, prediction in zip(neural_value_list, predictions_list):
+            for nv, prediction in zip(neural_value, predictions):
                 neural_value_dict[layer][int(prediction)]['wrong_pictures'].append(nv)
                 neural_value_dict[layer][int(prediction)]['wrong_predictions'].append(prediction)
 
@@ -70,14 +75,14 @@ def get_neural_value(id_dataset, dataset, checkpoint, is_ood=False):
             number_of_wrong = neural_value_dict[layer][category]['wrong_pictures'].__len__()
             print(f'category {category}: {number_of_correct} correct predictions, {number_of_wrong} wrong predictions.')
             if number_of_correct != 0:
-                result_dict[layer][category]['correct_pictures'] = np.concatenate(neural_value_dict[layer][category]['correct_pictures'])
-                result_dict[layer][category]['correct_predictions'] = np.concatenate(neural_value_dict[layer][category]['correct_predictions'])
+                result_dict[layer][category]['correct_pictures'] = np.array(neural_value_dict[layer][category]['correct_pictures'])
+                result_dict[layer][category]['correct_predictions'] = np.array(neural_value_dict[layer][category]['correct_predictions'])
             else:
                 result_dict[layer][category]['correct_pictures'] = np.array([])
                 result_dict[layer][category]['correct_predictions'] = np.array([])
             if number_of_wrong != 0:
-                result_dict[layer][category]['wrong_pictures'] = np.concatenate(neural_value_dict[layer][category]['wrong_pictures'])
-                result_dict[layer][category]['wrong_predictions'] = np.concatenate(neural_value_dict[layer][category]['wrong_predictions'])
+                result_dict[layer][category]['wrong_pictures'] = np.array(neural_value_dict[layer][category]['wrong_pictures'])
+                result_dict[layer][category]['wrong_predictions'] = np.array(neural_value_dict[layer][category]['wrong_predictions'])
             else:
                 result_dict[layer][category]['wrong_pictures'] = np.array([])
                 result_dict[layer][category]['wrong_predictions'] = np.array([])
@@ -146,7 +151,7 @@ def encode_by_selective(image_neural_value, label, encode_rate, number_of_neuron
         if all_class_average[r] == 0:
             selective[r] = 0.0
         else:
-            selective[r] = (image_neural_value[r] - not_class_l_average[label][r]) / all_class_average[r]
+            selective[r] = (image_neural_value[r] - not_class_l_average[label][r]) / abs(all_class_average[r])
 
     dict_sel = {}
     for index in range(len(selective)):
@@ -164,7 +169,7 @@ def encode_by_selective(image_neural_value, label, encode_rate, number_of_neuron
 
 def encode_abstraction(id_dataset, neural_value, train_dataset_statistic):
     # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-    # --------------------------selective  = [ output - average(-l) ] / average(all)------------------------# #
+    # --------------------------selective  = [ output - average(-l) ] / abs(average(all))------------------------# #
     # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
     layers = global_config.swin_config[id_dataset]['layers_of_getting_value']
@@ -430,13 +435,12 @@ def auroc(distance_of_train_data, distance_of_normal_data, distance_of_bad_data,
     tpr_list = np.array(tpr_list)
     auc_of_roc = auc(fpr_list, tpr_list)
 
-    return auc_of_roc
+    return auc_of_roc5
 
 
 def sk_auc(id_dataset, distance_of_test_data, distance_of_bad_data):
-
-    auc_sum = 0
-    count = 0
+    auc_list = []
+    far95_list = []
     for c in range(global_config.num_of_labels[id_dataset]):
         if not distance_of_bad_data[c]['wrong_pictures']:
             print('{}/{}: AUROC: {}'.format(c, global_config.num_of_labels[id_dataset], 'No examples'))
@@ -446,9 +450,12 @@ def sk_auc(id_dataset, distance_of_test_data, distance_of_bad_data):
         y_score = distance_of_test_data[c]['correct_pictures'] + distance_of_bad_data[c]['wrong_pictures']
         fpr, tpr, threshold = roc_curve(y_true, y_score)
         roc_auc = auc(fpr, tpr)
-        print('{}/{}: AUROC: {:.6f}'.format(c, global_config.num_of_labels[id_dataset], roc_auc))
-        auc_sum += roc_auc
-        count += 1
-
-    return auc_sum/count
-
+        auc_list.append(roc_auc)
+        target_tpr = 0.95
+        target_threshold_idx = np.argmax(tpr >= target_tpr)
+        target_fpr = fpr[target_threshold_idx]
+        far95_list.append(target_fpr)
+        print('{}/{}: AUROC: {:.6f}, FAR95: {:.6f}, TPR: {}'.
+              format(c, global_config.num_of_labels[id_dataset], roc_auc, target_fpr, tpr[target_threshold_idx]))
+    print('avg-AUROC: {:.6f}, avg-FAR95: {:.6f}'.format(np.average(auc_list), np.average(far95_list)))
+    return

@@ -1,5 +1,6 @@
 import numpy as np
-from datasets import load_dataset, load_metric, Dataset
+from tqdm import tqdm
+from datasets import load_dataset, load_metric,DatasetDict
 from transformers import AutoFeatureExtractor, TrainingArguments, Trainer, SwinConfig
 from transformers.trainer_utils import IntervalStrategy
 from torchvision.transforms import (
@@ -19,7 +20,6 @@ from model_swin_transformer import SwinModel, SwinForImageClassification
 from load_data import load_gtsrb
 from global_config import num_of_labels
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "5"
 os.environ["WANDB_DISABLED"] = "true"
 
 
@@ -69,7 +69,7 @@ def image_tokenizer(data, model_checkpoint, mode):
 def swin_models(model_checkpoint, dataset, train_data, test_data, output_hidden_states=False, mode='test'):
 
     metric = load_metric("accuracy")
-    batch_size = 32
+    batch_size = 64
     if mode == 'train':
         swin_model = SwinModel.from_pretrained(model_checkpoint)
         config = SwinConfig.from_pretrained(model_checkpoint, num_labels=num_of_labels[dataset],
@@ -128,19 +128,26 @@ def train_models(id_dataset):
         row_names = ('image', 'label')
         pretrained_checkpoint = "./models/pretrained_model/swin-tiny-patch4-window7-224"
         finetuned_checkpoint = "./models/swin-finetuned-mnist/best"
-        dataset = load_dataset("./data/mnist/mnist/")
+        dataset = load_dataset("./data/mnist/mnist/", cache_dir='./dataset/')
 
     elif id_dataset == 'fashion_mnist':
         row_names = ('image', 'label')
         pretrained_checkpoint = "./models/pretrained_model/swin-tiny-patch4-window7-224"
         finetuned_checkpoint = "./models/swin-finetuned-fashion_mnist/best"
-        dataset = load_dataset("./data/fashion_mnist/fashion_mnist/")
+        dataset = load_dataset("./data/fashion_mnist/fashion_mnist/", cache_dir='./dataset/')
 
     elif id_dataset == 'cifar10':
         row_names = ('img', 'label')
         pretrained_checkpoint = "./models/pretrained_model/swin-tiny-patch4-window7-224"
         finetuned_checkpoint = "./models/swin-finetuned-cifar10/best"
-        dataset = load_dataset("./data/cifar10/cifar10/")
+        dataset = load_dataset("./data/cifar10/cifar10/", cache_dir='./dataset/')
+
+    elif id_dataset == 'svhn':
+        row_names = ('image', 'label')
+        pretrained_checkpoint = "./models/pretrained_model/swin-tiny-patch4-window7-224"
+        finetuned_checkpoint = "./models/swin-finetuned-svhn/best"
+        dataset = load_dataset('./data/svhn/svhn/', 'cropped_digits', cache_dir='./dataset/')
+        del dataset['extra']
 
     elif id_dataset == 'gtsrb':
         row_names = ('image', 'label')
@@ -148,35 +155,51 @@ def train_models(id_dataset):
         finetuned_checkpoint = "./models/swin-finetuned-gtsrb/best"
         dataset = load_gtsrb()
 
+    elif id_dataset == 'imagenet100':
+        row_names = ('image', 'label')
+        pretrained_checkpoint = "./models/pretrained_model/swin-tiny-patch4-window7-224"
+        finetuned_checkpoint = "./models/swin-finetuned-imagenet100/best"
+        dataset = load_dataset("./data/imagenet100/imagenet100/", cache_dir='./dataset/')
+        dataset = DatasetDict({'train': dataset['train'], 'test': dataset['validation']})
+
+    elif id_dataset == 'cifar100':
+        row_names = ('img', 'fine_label')
+        pretrained_checkpoint = "./models/pretrained_model/swin-tiny-patch4-window7-224"
+        finetuned_checkpoint = "./models/swin-finetuned-cifar100/best"
+        dataset = load_dataset("./data/cifar100/cifar100/", cache_dir='./dataset/')
     else:
         print('dataset is not exist.')
         return
 
-    rename_train_data = Dataset.from_dict({'image': dataset['train'][row_names[0]],
-                                           'label': dataset['train'][row_names[1]]})
-    rename_test_data = Dataset.from_dict({'image': dataset['test'][row_names[0]],
-                                          'label': dataset['test'][row_names[1]]})
+    train_data = dataset['train']
+    test_data = dataset['test']
+    if row_names[0] != 'image':
+        train_data = train_data.rename_column(row_names[0], 'image')
+        test_data = test_data.rename_column(row_names[0], 'image')
+    if row_names[1] != 'label':
+        train_data = train_data.rename_column(row_names[1], 'label')
+        test_data = test_data.rename_column(row_names[1], 'label')
 
     if os.path.exists(f'{finetuned_checkpoint}/pytorch_model.bin'):
         print(f'finetuned model is existed! \n {finetuned_checkpoint}/pytorch_model.bin')
-        train_dataset = image_tokenizer(data=rename_train_data, model_checkpoint=finetuned_checkpoint, mode='test')
-        test_dataset = image_tokenizer(data=rename_test_data, model_checkpoint=finetuned_checkpoint, mode='test')
+        train_data_tokenized = image_tokenizer(data=train_data, model_checkpoint=finetuned_checkpoint, mode='test')
+        test_dataset_tokenized = image_tokenizer(data=test_data, model_checkpoint=finetuned_checkpoint, mode='test')
         trainer = swin_models(model_checkpoint=finetuned_checkpoint,
                               dataset=id_dataset,
-                              train_data=train_dataset,
-                              test_data=test_dataset,
+                              train_data=train_data_tokenized,
+                              test_data=test_dataset_tokenized,
                               output_hidden_states=False,
                               mode='test')
         metrics = trainer.evaluate()
         trainer.log_metrics('test', metrics)
 
     else:
-        train_dataset = image_tokenizer(data=rename_train_data, model_checkpoint=pretrained_checkpoint, mode='train')
-        test_dataset = image_tokenizer(data=rename_test_data, model_checkpoint=pretrained_checkpoint, mode='train')
+        train_data_tokenized = image_tokenizer(data=train_data, model_checkpoint=pretrained_checkpoint, mode='train')
+        test_dataset_tokenized = image_tokenizer(data=test_data, model_checkpoint=pretrained_checkpoint, mode='train')
         trainer = swin_models(model_checkpoint=pretrained_checkpoint,
                               dataset=id_dataset,
-                              train_data=train_dataset,
-                              test_data=test_dataset,
+                              train_data=train_data_tokenized,
+                              test_data=test_dataset_tokenized,
                               output_hidden_states=False,
                               mode='train')
         train_results = trainer.train()
@@ -187,8 +210,16 @@ def train_models(id_dataset):
 if __name__ == '__main__':
 
     # id_data = 'mnist'
+    # train_models(id_data)
     # id_data = 'fashion_mnist'
-    id_data = 'cifar10'
+    # train_models(id_data)
+    # id_data = 'cifar10'
+    # train_models(id_data)
+    # id_data = 'svhn'
+    # train_models(id_data)
     # id_data = 'gtsrb'
-
+    # train_models(id_data)
+    # id_data = 'imagenet100'
+    # train_models(id_data)
+    id_data = 'cifar100'
     train_models(id_data)

@@ -1,9 +1,10 @@
 import pickle
 import os
+import time
 import pandas as pd
 # import seaborn as sns
 import matplotlib.pyplot as plt
-from datasets import load_dataset, Dataset
+from datasets import load_dataset
 
 from load_data import load_gtsrb, load_ood_data
 from ReAD import get_neural_value, statistic_of_neural_value, \
@@ -11,34 +12,42 @@ from ReAD import get_neural_value, statistic_of_neural_value, \
 from global_config import num_of_labels, swin_config
 
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "1"
-os.environ["WANDB_DISABLED"] = "true"
+# os.environ["WANDB_DISABLED"] = "true"
 
 
 if __name__ == "__main__":
 
-    id_dataset = 'mnist'
+    # id_dataset = 'mnist'
     # id_dataset = 'fashion_mnist'
     # id_dataset = 'cifar10'
+    id_dataset = 'svhn'
     # id_dataset = 'gtsrb'
+    # id_dataset = 'cifar100'
 
     if id_dataset == 'mnist':
         row_names = ('image', 'label')
         finetuned_checkpoint = "./models/swin-finetuned-mnist/best"
-        dataset = load_dataset("./data/mnist/mnist/")
+        dataset = load_dataset("./data/mnist/mnist/", cache_dir='./dataset/')
         detector_path = './data/mnist/detector/'
 
     elif id_dataset == 'fashion_mnist':
         row_names = ('image', 'label')
         finetuned_checkpoint = "./models/swin-finetuned-fashion_mnist/best"
-        dataset = load_dataset("./data/fashion_mnist/fashion_mnist/")
+        dataset = load_dataset("./data/fashion_mnist/fashion_mnist/", cache_dir='./dataset/')
         detector_path = './data/fashion_mnist/detector/'
 
     elif id_dataset == 'cifar10':
         row_names = ('img', 'label')
         finetuned_checkpoint = "./models/swin-finetuned-cifar10/best"
-        dataset = load_dataset("./data/cifar10/cifar10/")
+        dataset = load_dataset("./data/cifar10/cifar10/", cache_dir='./dataset/')
         detector_path = './data/cifar10/detector/'
+
+    elif id_dataset == 'svhn':
+        row_names = ('image', 'label')
+        finetuned_checkpoint = "./models/swin-finetuned-svhn/best"
+        dataset = load_dataset('./data/svhn/svhn/', 'cropped_digits', cache_dir='./dataset/')
+        del dataset['extra']
+        detector_path = './data/svhn/detector/'
 
     elif id_dataset == 'gtsrb':
         row_names = ('image', 'label')
@@ -46,28 +55,34 @@ if __name__ == "__main__":
         dataset = load_gtsrb()
         detector_path = './data/gtsrb/detector/'
 
+    elif id_dataset == 'cifar100':
+        row_names = ('img', 'fine_label')
+        finetuned_checkpoint = "./models/swin-finetuned-cifar100/best"
+        dataset = load_dataset("./data/cifar100/cifar100/", cache_dir='./dataset/')
+        detector_path = './data/cifar100/detector/'
+
     else:
         print('dataset is not exist.')
         exit()
 
-    rename_train_data = Dataset.from_dict({'image': dataset['train'][row_names[0]],
-                                           'label': dataset['train'][row_names[1]]})
-    rename_test_data = Dataset.from_dict({'image': dataset['test'][row_names[0]],
-                                          'label': dataset['test'][row_names[1]]})
+    train_data = dataset['train']
+    test_data = dataset['test']
+    if row_names[0] != 'image':
+        train_data = train_data.rename_column(row_names[0], 'image')
+        test_data = test_data.rename_column(row_names[0], 'image')
+    if row_names[1] != 'label':
+        train_data = train_data.rename_column(row_names[1], 'label')
+        test_data = test_data.rename_column(row_names[1], 'label')
 
     train_nv_statistic = None
     k_means_centers = None
-    distance_train_statistic = None
     if os.path.exists(detector_path + 'train_nv_statistic.pkl') and \
-            os.path.exists(detector_path + 'k_means_centers.pkl') and \
-            os.path.exists(detector_path + 'distance_of_ReAD_for_train_data.pkl'):
+            os.path.exists(detector_path + 'k_means_centers.pkl'):
         print("\nDetector is existed!")
         file1 = open(detector_path + 'train_nv_statistic.pkl', 'rb')
         file2 = open(detector_path + 'k_means_centers.pkl', 'rb')
-        file3 = open(detector_path + 'distance_of_ReAD_for_train_data.pkl', 'rb')
         train_nv_statistic = pickle.load(file1)
         k_means_centers = pickle.load(file2)
-        distance_train_statistic = pickle.load(file3)
 
     else:
         if not os.path.exists(f'./data/{id_dataset}'):
@@ -76,8 +91,10 @@ if __name__ == "__main__":
             os.mkdir(detector_path)
         # ********************** Train Detector **************************** #
         print('\n********************** Train Detector ****************************')
+        train_start_time = time.time()
+
         print('\nGet neural value of train dataset:')
-        train_picture_neural_value = get_neural_value(id_dataset=id_dataset, dataset=rename_train_data,
+        train_picture_neural_value = get_neural_value(id_dataset=id_dataset, dataset=train_data,
                                                       checkpoint=finetuned_checkpoint, is_ood=False)
         print('\nStatistic of train data neural value:')
         train_nv_statistic = statistic_of_neural_value(id_dataset=id_dataset,
@@ -101,17 +118,17 @@ if __name__ == "__main__":
         pickle.dump(k_means_centers, file2)
         file2.close()
 
-        print('\nCalculate distance between abstractions and cluster centers ...')
-        distance_train_statistic = statistic_distance(id_dataset=id_dataset, abstractions=train_ReAD_concatenated,
-                                                      cluster_centers=k_means_centers)
-        file3 = open(detector_path + 'distance_of_ReAD_for_train_data.pkl', 'wb')
-        pickle.dump(distance_train_statistic, file3)
-        file3.close()
+        train_end_time = time.time()
+        train_total_time = train_end_time-train_start_time
+        train_time_for_per_example = train_total_time / train_data.num_rows
+        print(f"\nTrain Process: total time-{train_total_time}s, per example-{train_time_for_per_example}s")
 
     # ********************** Evaluate OOD Detection **************************** #
     print('\n********************** Evaluate OOD Detection ****************************')
+    test_start_time = time.time()
+
     print('\nGet neural value of test dataset:')
-    test_picture_neural_value = get_neural_value(id_dataset=id_dataset, dataset=rename_test_data,
+    test_picture_neural_value = get_neural_value(id_dataset=id_dataset, dataset=test_data,
                                                  checkpoint=finetuned_checkpoint, is_ood=False)
     print('\nEncoding ReAD abstraction of test dataset:')
     test_ReAD_abstractions = encode_abstraction(id_dataset=id_dataset, neural_value=test_picture_neural_value,
@@ -121,9 +138,16 @@ if __name__ == "__main__":
     test_distance = statistic_distance(id_dataset=id_dataset, abstractions=test_ReAD_concatenated,
                                        cluster_centers=k_means_centers)
 
+    test_end_time = time.time()
+    test_total_time = test_end_time - test_start_time
+    test_time_for_per_example = test_total_time / test_data.num_rows
+    print(f"\nDetection Process(test): total time-{test_total_time}s, per example-{test_time_for_per_example}s")
+
     OOD_dataset = swin_config[id_dataset]['ood_settings']
     for ood in OOD_dataset:
         print('\n************Evaluating*************')
+        ood_start_time = time.time()
+
         print(f'In-Distribution Data: {id_dataset}, Out-of-Distribution Data: {ood}.')
         ood_data = load_ood_data(ood_dataset=ood)
         print('\nGet neural value of ood dataset...')
@@ -138,11 +162,11 @@ if __name__ == "__main__":
         ood_distance = statistic_distance(id_dataset=id_dataset, abstractions=ood_ReAD_concatenated,
                                           cluster_centers=k_means_centers)
 
-        # auc = auroc(distance_train_statistic, clean_distance, adv_distance, num_of_labels[clean_dataset])
-        auc = sk_auc(test_distance, ood_distance, num_of_labels[id_dataset])
-
-        print('\nPerformance of Detector:')
-        print('AUROC: {:.6f}'.format(auc))
+        ood_end_time = time.time()
+        ood_total_time = ood_end_time - ood_start_time
+        ood_time_for_per_example = ood_total_time / ood_data.num_rows
+        auc = sk_auc(id_dataset, test_distance, ood_distance)
+        print(f"Detection Process(ood): total time-{ood_total_time}s, per example-{ood_time_for_per_example}s")
         print('*************************************\n')
 
         # distance_list = []

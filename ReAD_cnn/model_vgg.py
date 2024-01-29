@@ -103,21 +103,23 @@ class VGGModel(object):
         model.add(tf.keras.layers.Dropout(0.5))
         model.add(tf.keras.layers.Dense(self.train_class_number, activation=None))
         model.add(tf.keras.layers.Activation('softmax'))
-        sgd = tf.keras.optimizers.SGD(lr=0.1, decay=1e-6, momentum=0.9, nesterov=True)
+        sgd = tf.keras.optimizers.SGD(learning_rate=0.01, weight_decay=1e-6, momentum=0.9, nesterov=True)
         model.compile(loss='categorical_crossentropy', optimizer=sgd, metrics=['accuracy'])
         return model
 
     def train(self):
         model = self.create_model()
-        # model.fit(self.train_data, self.train_label, epochs=10, verbose=2, shuffle=True, validation_split=0.2)
+        model_checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
+            filepath=self.model_save_path + 'tf_model.h5',
+            verbose=1,
+            save_best_only=True,
+            monitor='val_accuracy')
         model.fit(self.train_data, self.train_label, epochs=120, verbose=1,
-                  validation_data=(self.test_data, self.test_label))
-        model.save(self.model_save_path+'tf_model.h5')
-        print("save path:", self.model_save_path+'tf_model.h5')
+                  validation_data=(self.test_data, self.test_label), callbacks=[model_checkpoint_callback])
 
     def show_model(self):
         model = tf.keras.models.load_model(self.model_save_path+'tf_model.h5')
-        model.summary()
+        # model.summary()
         print("train dataset:")
         print(self.train_data.shape, self.train_label.shape)
         model.evaluate(self.train_data, self.train_label, verbose=2)

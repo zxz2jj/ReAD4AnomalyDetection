@@ -3,6 +3,7 @@ num_of_labels = {
     'mnist': 10,
     'fmnist': 10,
     'cifar10': 10,
+    'cifar100': 100,
     'gtsrb': 43,
     'svhn': 10,
 }
@@ -36,8 +37,14 @@ cnn_config = {
     'svhn': {
         'layers_of_getting_value': [-4],
         'neurons_of_each_layer': [512],
+        'ood_settings': ['TinyImageNet', 'LSUN', 'iSUN', 'UniformNoise_32', 'GuassianNoise_32'],
         'adversarial_settings': ['ba', 'cw_l2', 'deepfool', 'ead', 'fgsm', 'hopskipjumpattack_l2',
                                  'jsma', 'newtonfool', 'pixelattack', 'squareattack_linf', 'wassersteinattack']
+    },
+    'cifar100': {
+        'layers_of_getting_value': [-4],
+        'neurons_of_each_layer': [512],
+        'ood_settings': ['TinyImageNet', 'LSUN', 'iSUN', 'UniformNoise_32', 'GuassianNoise_32'],
     },
 }
 

@@ -10,7 +10,7 @@ from load_data import load_data
 from datasets import load_metric
 
 os.environ["WANDB_DISABLED"] = "true"
-os.environ["CUDA_VISIBLE_DEVICES"] = "6"
+# os.environ["CUDA_VISIBLE_DEVICES"] = "2"
 
 
 def sentence_tokenizer(dataset, model_checkpoint):
@@ -33,7 +33,7 @@ def sentence_tokenizer(dataset, model_checkpoint):
 def roberta_models(id_dataset, model_checkpoint, train_data, test_data, output_hidden_states=False):
 
     metric = load_metric("accuracy")
-    batch_size = 16
+    batch_size = 32
     config = RobertaConfig.from_pretrained(model_checkpoint, num_labels=num_of_labels[id_dataset],
                                            output_hidden_states=output_hidden_states)
     roberta_model_for_classification = RobertaForSequenceClassification.from_pretrained(model_checkpoint, config=config)
@@ -123,11 +123,13 @@ def train_models(id_dataset):
 
 if __name__ == '__main__':
     id_data = "sst2"
-    # id_data = "imdb"
-    # id_data = "trec"
-    # id_data = 'newsgroup'
-
     train_models(id_data)
+    # id_data = "imdb"
+    # train_models(id_data)
+    # id_data = "trec"
+    # train_models(id_data)
+    # id_data = 'newsgroup'
+    # train_models(id_data)
 
 
 

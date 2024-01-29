@@ -1,5 +1,5 @@
 import tensorflow as tf
-from keras.layers import Conv2D, Activation, Dropout, MaxPooling2D, Flatten, Dense
+from tensorflow.keras.layers import Conv2D, Activation, Dropout, MaxPooling2D, Flatten, Dense
 
 
 class LeNetModel(object):
@@ -40,9 +40,13 @@ class LeNetModel(object):
 
     def train(self, epochs=10):
         model = self.create_model()
-        model.fit(self.train_data, self.train_label, epochs=epochs, verbose=2)
-        model.save(self.model_save_path+'tf_model.h5')
-        print("save path:", self.model_save_path)
+        model_checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
+            filepath=self.model_save_path + 'tf_model.h5',
+            verbose=1,
+            save_best_only=True,
+            monitor='val_accuracy')
+        model.fit(self.train_data, self.train_label, epochs=epochs, validation_data=(self.test_data, self.test_label),
+                  callbacks=[model_checkpoint_callback])
 
     def show_model(self):
         model = tf.keras.models.load_model(self.model_save_path+'tf_model.h5')

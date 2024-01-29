@@ -1,10 +1,11 @@
 import numpy as np
 import math
 import torch
+from tqdm import tqdm
+from torch.utils.data import DataLoader
 from sklearn.cluster import KMeans
 from sklearn import metrics
 from sklearn.metrics import auc, roc_curve
-from torch.utils.data import Subset
 from transformers import RobertaConfig
 
 import global_config
@@ -16,7 +17,6 @@ def get_neural_value(id_dataset, dataset, checkpoint, is_anomaly=False):
                                            output_hidden_states=False, ignore_mismatched_sizes=True)
     model = RobertaForSequenceClassification.from_pretrained(checkpoint, config=config)
     layers = global_config.roberta_config[id_dataset]['layers_of_getting_value']
-
     neural_value_dict = {}
     for layer in layers:
         neural_value_category = {}
@@ -28,23 +28,26 @@ def get_neural_value(id_dataset, dataset, checkpoint, is_anomaly=False):
     neural_value_list = list()
     predictions_list = list()
 
+    batch_size = 32
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    print(f'Device: {device}, BatchSize: {batch_size}')
     model.to(device)
-    for i, batch in zip(range(dataset.shape[0]), dataset):
-        if torch.cuda.is_available():
-            torch.cuda.empty_cache()
-        print('\rImage: {} / {}'.format(i + 1, len(dataset['input_ids'])), end='')
-        outputs = model(input_ids=torch.unsqueeze(torch.tensor(batch['input_ids']), 0).to(device),
-                        attention_mask=torch.unsqueeze(torch.tensor(batch['attention_mask']), 0).to(device))
+    batches = DataLoader(dataset=dataset, batch_size=batch_size)
+    for batch in tqdm(batches):
+        input_ids = torch.stack(batch['input_ids']).transpose(0, 1)
+        attention_mask = torch.stack(batch['attention_mask']).transpose(0, 1)
+        outputs = model(input_ids=input_ids.to(device), attention_mask=attention_mask.to(device))
         prediction = torch.argmax(outputs.logits, 1)
         neural_value_list.append(model.get_hidden_fully_connected_states().cpu().detach().numpy())
         predictions_list.append(prediction.cpu().detach().numpy())
+    neural_value = np.concatenate(neural_value_list)
+    predictions = np.concatenate(predictions_list)
 
     for layer in layers:
         print('\nget neural value in layer: {}'.format(layer))
         if not is_anomaly:
             labels = dataset['label']
-            for nv, prediction, label in zip(neural_value_list, predictions_list, labels):
+            for nv, prediction, label in zip(neural_value, predictions, labels):
                 if prediction == label:
                     neural_value_dict[layer][int(prediction)]['correct_pictures'].append(nv)
                     neural_value_dict[layer][int(prediction)]['correct_predictions'].append(prediction)
@@ -52,7 +55,7 @@ def get_neural_value(id_dataset, dataset, checkpoint, is_anomaly=False):
                     neural_value_dict[layer][int(prediction)]['wrong_pictures'].append(nv)
                     neural_value_dict[layer][int(prediction)]['wrong_predictions'].append(prediction)
         elif is_anomaly:
-            for nv, prediction in zip(neural_value_list, predictions_list):
+            for nv, prediction in zip(neural_value, predictions):
                 neural_value_dict[layer][int(prediction)]['wrong_pictures'].append(nv)
                 neural_value_dict[layer][int(prediction)]['wrong_predictions'].append(prediction)
 
@@ -65,14 +68,14 @@ def get_neural_value(id_dataset, dataset, checkpoint, is_anomaly=False):
             number_of_wrong = neural_value_dict[layer][category]['wrong_pictures'].__len__()
             print(f'category {category}: {number_of_correct} correct predictions, {number_of_wrong} wrong predictions.')
             if number_of_correct != 0:
-                result_dict[layer][category]['correct_pictures'] = np.concatenate(neural_value_dict[layer][category]['correct_pictures'])
-                result_dict[layer][category]['correct_predictions'] = np.concatenate(neural_value_dict[layer][category]['correct_predictions'])
+                result_dict[layer][category]['correct_pictures'] = np.array(neural_value_dict[layer][category]['correct_pictures'])
+                result_dict[layer][category]['correct_predictions'] = np.array(neural_value_dict[layer][category]['correct_predictions'])
             else:
                 result_dict[layer][category]['correct_pictures'] = np.array([])
                 result_dict[layer][category]['correct_predictions'] = np.array([])
             if number_of_wrong != 0:
-                result_dict[layer][category]['wrong_pictures'] = np.concatenate(neural_value_dict[layer][category]['wrong_pictures'])
-                result_dict[layer][category]['wrong_predictions'] = np.concatenate(neural_value_dict[layer][category]['wrong_predictions'])
+                result_dict[layer][category]['wrong_pictures'] = np.array(neural_value_dict[layer][category]['wrong_pictures'])
+                result_dict[layer][category]['wrong_predictions'] = np.array(neural_value_dict[layer][category]['wrong_predictions'])
             else:
                 result_dict[layer][category]['wrong_pictures'] = np.array([])
                 result_dict[layer][category]['wrong_predictions'] = np.array([])
@@ -124,11 +127,14 @@ def statistic_of_neural_value(id_dataset, neural_value):
     return neural_value_statistic
 
 
-def encode_by_selective(image_neural_value, label, encode_rate, number_of_neuron, not_class_l_average, all_class_average):
+def encode_by_selective(neural_value, prediction, encode_rate, number_of_neuron, not_class_l_average, all_class_average):
+    # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+    # --------------------------selective  = [ output - average(-l) ] / abs(average(all))------------------------# #
+    # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
     """
     根据某selective值对某一图片的神经元进行编码
-    :param image_neural_value: 图片的神经元输出
-    :param label: 图片的预测标签CC
+    :param neural_value: 图片的神经元输出
+    :param prediction: 图片的预测标签CC
     :param number_of_neuron: 神经元个数
     :param encode_rate: 编码率
     :param not_class_l_average: 训练集非l类的图片的神经元输出均值
@@ -141,7 +147,7 @@ def encode_by_selective(image_neural_value, label, encode_rate, number_of_neuron
         if all_class_average[r] == 0:
             selective[r] = 0.0
         else:
-            selective[r] = (image_neural_value[r] - not_class_l_average[label][r]) / all_class_average[r]
+            selective[r] = (neural_value[r] - not_class_l_average[prediction][r]) / abs(all_class_average[r])
 
     dict_sel = {}
     for index in range(len(selective)):
@@ -158,9 +164,6 @@ def encode_by_selective(image_neural_value, label, encode_rate, number_of_neuron
 
 
 def encode_abstraction(id_dataset, neural_value, train_dataset_statistic):
-    # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-    # --------------------------selective  = [ output - average(-l) ] / average(all)------------------------# #
-    # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
     layers = global_config.roberta_config[id_dataset]['layers_of_getting_value']
     neuron_number_list = global_config.roberta_config[id_dataset]['neurons_of_each_layer']
@@ -429,9 +432,8 @@ def auroc(distance_of_train_data, distance_of_normal_data, distance_of_bad_data,
 
 
 def sk_auc(id_dataset, distance_of_test_data, distance_of_bad_data):
-
-    auc_sum = 0
-    count = 0
+    auc_list = []
+    far95_list = []
     for c in range(global_config.num_of_labels[id_dataset]):
         if not distance_of_bad_data[c]['wrong_pictures']:
             print('{}/{}: AUROC: {}'.format(c, global_config.num_of_labels[id_dataset], 'No examples'))
@@ -441,9 +443,13 @@ def sk_auc(id_dataset, distance_of_test_data, distance_of_bad_data):
         y_score = distance_of_test_data[c]['correct_pictures'] + distance_of_bad_data[c]['wrong_pictures']
         fpr, tpr, threshold = roc_curve(y_true, y_score)
         roc_auc = auc(fpr, tpr)
-        print('{}/{}: AUROC: {:.6f}'.format(c, global_config.num_of_labels[id_dataset], roc_auc))
-        auc_sum += roc_auc
-        count += 1
-
-    return auc_sum/count
+        auc_list.append(roc_auc)
+        target_tpr = 0.95
+        target_threshold_idx = np.argmax(tpr >= target_tpr)
+        target_fpr = fpr[target_threshold_idx]
+        far95_list.append(target_fpr)
+        print('{}/{}: AUROC: {:.6f}, FAR95: {:.6f}, TPR: {}'.
+              format(c, global_config.num_of_labels[id_dataset], roc_auc, target_fpr, tpr[target_threshold_idx]))
+    print('avg-AUROC: {:.6f}, avg-FAR95: {:.6f}'.format(np.average(auc_list), np.average(far95_list)))
+    return
 

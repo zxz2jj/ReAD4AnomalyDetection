@@ -4,9 +4,10 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 import tensorflow as tf
+import time
 
 from train_models import train_model
-from load_data import load_mnist, load_fmnist, load_cifar10, load_gtsrb, load_svhn, load_clean_adv_data, load_ood_data
+from load_data import load_mnist, load_fmnist, load_cifar10, load_cifar100, load_gtsrb, load_svhn, load_clean_adv_data, load_ood_data
 from ReAD import classify_id_pictures, get_neural_value, statistic_of_neural_value, encode_abstraction, \
     concatenate_data_between_layers, k_means, statistic_distance, auroc, sk_auc
 from ReAD import t_sne_visualization
@@ -15,20 +16,30 @@ from global_config import num_of_labels, selective_rate, cnn_config
 
 if __name__ == "__main__":
 
-    id_dataset = 'mnist'
-    model_path = './models/lenet_mnist/'
-    detector_path = './data/mnist/detector/'
-    x_train, y_train, x_test, y_test = load_mnist()
+    # id_dataset = 'mnist'
+    # model_path = './models/lenet_mnist/'
+    # detector_path = './data/mnist/detector/'
+    # x_train, y_train, x_test, y_test = load_mnist()
 
-    # id_dataset = 'fmnist'
-    # model_path = './models/lenet_fmnist/'
-    # detector_path = './data/fmnist/detector/'
-    # x_train, y_train, x_test, y_test = load_fmnist()
+    id_dataset = 'fmnist'
+    model_path = './models/lenet_fmnist/'
+    detector_path = './data/fmnist/detector/'
+    x_train, y_train, x_test, y_test = load_fmnist()
+
+    # id_dataset = 'svhn'
+    # model_path = './models/resnet18_svhn/'
+    # detector_path = './data/svhn/detector/'
+    # x_train, y_train, x_test, y_test = load_svhn()
 
     # id_dataset = 'cifar10'
     # model_path = './models/vgg19_cifar10/'
     # detector_path = './data/cifar10/detector/'
     # x_train, y_train, x_test, y_test = load_cifar10()
+
+    # id_dataset = 'cifar100'
+    # model_path = './models/resnet18_cifar100/'
+    # detector_path = './data/cifar100/detector/'
+    # x_train, y_train, x_test, y_test = load_cifar100()
 
     # id_dataset = 'gtsrb'
     # model_path = './models/vgg19_gtsrb/'
@@ -44,15 +55,12 @@ if __name__ == "__main__":
     k_means_centers = None
     distance_train_statistic = None
     if os.path.exists(detector_path + 'train_nv_statistic.pkl') and \
-            os.path.exists(detector_path + 'k_means_centers.pkl') and \
-            os.path.exists(detector_path + 'distance_of_ReAD_for_train_data.pkl'):
+            os.path.exists(detector_path + 'k_means_centers.pkl'):
         print("\nDetector is existed!")
         file1 = open(detector_path + 'train_nv_statistic.pkl', 'rb')
         file2 = open(detector_path + 'k_means_centers.pkl', 'rb')
-        file3 = open(detector_path + 'distance_of_ReAD_for_train_data.pkl', 'rb')
         train_nv_statistic = pickle.load(file1)
         k_means_centers = pickle.load(file2)
-        distance_train_statistic = pickle.load(file3)
 
     else:
         if not os.path.exists(f'./data/{id_dataset}'):
@@ -61,6 +69,8 @@ if __name__ == "__main__":
             os.mkdir(detector_path)
         # ********************** Train Detector **************************** #
         print('\n********************** Train Detector ****************************')
+        train_start_time = time.time()
+
         train_picture_classified = classify_id_pictures(id_dataset=id_dataset, dataset=x_train,
                                                         labels=tf.argmax(y_train, axis=1), model_path=model_path)
 
@@ -97,15 +107,15 @@ if __name__ == "__main__":
         pickle.dump(k_means_centers, file2)
         file2.close()
 
-        print('\nCalculate distance between abstractions and cluster centers ...')
-        distance_train_statistic = statistic_distance(id_dataset=id_dataset, abstractions=train_ReAD_concatenated,
-                                                      cluster_centers=k_means_centers)
-        file3 = open(detector_path + 'distance_of_ReAD_for_train_data.pkl', 'wb')
-        pickle.dump(distance_train_statistic, file3)
-        file3.close()
+        train_end_time = time.time()
+        train_total_time = train_end_time-train_start_time
+        train_time_for_per_example = train_total_time / x_train.shape[0]
+        print(f"\nTrain Process: total time-{train_total_time}s, per example-{train_time_for_per_example}s")
 
     # ********************** Evaluate OOD Detection **************************** #
     print('\n********************** Evaluate OOD Detection ****************************')
+    test_start_time = time.time()
+
     test_picture_classified = classify_id_pictures(id_dataset=id_dataset, dataset=x_test,
                                                    labels=tf.argmax(y_test, axis=1), model_path=model_path)
     print('\nGet neural value of test dataset:')
@@ -120,9 +130,15 @@ if __name__ == "__main__":
     test_distance = statistic_distance(id_dataset=id_dataset, abstractions=test_ReAD_concatenated,
                                        cluster_centers=k_means_centers)
 
+    test_end_time = time.time()
+    test_total_time = test_end_time - test_start_time
+    test_time_for_per_example = test_total_time / x_test.shape[0]
+    print(f"\nDetection Process(test): total time-{test_total_time}s, per example-{test_time_for_per_example}s")
+
     OOD_dataset = cnn_config[id_dataset]['ood_settings']
     for ood in OOD_dataset:
         print('\n************Evaluating*************')
+        ood_start_time = time.time()
         print(f'In-Distribution Data: {id_dataset}, Out-of-Distribution Data: {ood}.')
         ood_data, number_of_ood = load_ood_data(ood_dataset=ood, id_model_path=model_path,
                                                 num_of_categories=num_of_labels[id_dataset])
@@ -138,12 +154,13 @@ if __name__ == "__main__":
         ood_distance = statistic_distance(id_dataset=id_dataset, abstractions=ood_ReAD_concatenated,
                                           cluster_centers=k_means_centers)
 
-        # auc = auroc(distance_train_statistic, clean_distance, adv_distance, num_of_labels[clean_dataset])
-        auc = sk_auc(test_distance, ood_distance, num_of_labels[id_dataset])
-
-        print('\nPerformance of Detector:')
-        print('AUROC: {:.6f}'.format(auc))
+        ood_end_time = time.time()
+        ood_total_time = ood_end_time - ood_start_time
+        ood_time_for_per_example = ood_total_time / number_of_ood
+        auc = sk_auc(id_dataset, test_distance, ood_distance)
+        print(f"Detection Process(ood): total time-{ood_total_time}s, per example-{ood_time_for_per_example}s")
         print('*************************************\n')
+
 
         # distance_list = []
         # for i in range(10):

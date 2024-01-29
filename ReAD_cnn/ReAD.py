@@ -19,7 +19,7 @@ def classify_id_pictures(id_dataset, dataset, labels, model_path):
 
     model = tf.keras.models.load_model(model_path+'tf_model.h5')
 
-    print("\nclassify training dataset:")
+    print("\nclassify dataset:")
     picture_classified = {}
     for category in range(num_of_labels[id_dataset]):
         pictures_of_category = dataset[labels == category]
@@ -62,22 +62,32 @@ def get_neural_value(id_dataset, model_path, pictures_classified):
             correct_pictures = pictures_classified[category]['correct_pictures']
             wrong_pictures = pictures_classified[category]['wrong_pictures']
             if correct_pictures is not None:
-                correct_pictures_layer_output = get_layer_output([correct_pictures])
-                neural_value_category['correct_pictures'] = correct_pictures_layer_output
+                # correct_pictures_layer_output = get_layer_output([correct_pictures])
+                correct_pictures_layer_output = list()
+                batch_size = 128
+                for i in range(0, len(correct_pictures), batch_size):
+                    batch = correct_pictures[i:i + batch_size]
+                    batch_output = get_layer_output([batch])
+                    correct_pictures_layer_output.append(batch_output)
+                neural_value_category['correct_pictures'] = np.concatenate(correct_pictures_layer_output)
                 neural_value_category['correct_prediction'] = pictures_classified[category]['correct_prediction']
             else:
-                neural_value_category['correct_pictures'] = None
-                neural_value_category['correct_prediction'] = None
+                neural_value_category['correct_pictures'] = np.array([])
+                neural_value_category['correct_prediction'] = np.array([])
 
             if wrong_pictures is not None:
-                # neural_value_category['wrong_pictures'] = None
-                # neural_value_category['wrong_prediction'] = None
-                wrong_pictures_layer_output = get_layer_output([wrong_pictures])
-                neural_value_category['wrong_pictures'] = wrong_pictures_layer_output
+                # wrong_pictures_layer_output = get_layer_output([wrong_pictures])
+                wrong_pictures_layer_output = list()
+                batch_size = 128
+                for i in range(0, len(wrong_pictures), batch_size):
+                    batch = wrong_pictures[i:i + batch_size]
+                    batch_output = get_layer_output([batch])
+                    wrong_pictures_layer_output.append(batch_output)
+                neural_value_category['wrong_pictures'] = np.concatenate(wrong_pictures_layer_output)
                 neural_value_category['wrong_prediction'] = pictures_classified[category]['wrong_prediction']
             else:
-                neural_value_category['wrong_pictures'] = None
-                neural_value_category['wrong_prediction'] = None
+                neural_value_category['wrong_pictures'] = np.array([])
+                neural_value_category['wrong_prediction'] = np.array([])
 
             neural_value_layer_dict[category] = neural_value_category
         neural_value_dict[layer] = neural_value_layer_dict
@@ -146,7 +156,7 @@ def encode_by_selective(image_neural_value, label, encode_rate, number_of_neuron
         if all_class_average[r] == 0:
             selective[r] = 0.0
         else:
-            selective[r] = (image_neural_value[r] - not_class_l_average[label][r]) / all_class_average[r]
+            selective[r] = (image_neural_value[r] - not_class_l_average[label][r]) / abs(all_class_average[r])
 
     dict_sel = {}
     for index in range(len(selective)):
@@ -183,31 +193,25 @@ def encode_abstraction(id_dataset, neural_value, train_dataset_statistic):
             neural_value_category = neural_value[layers[k]][category]
             correct_abstraction_list = []
             wrong_abstraction_list = []
-            if neural_value_category['correct_pictures'] is not None:
-                if neural_value_category['correct_pictures'].shape[0] == 0:
-                    wrong_abstraction_list = []
-                else:
-                    for image, label in \
-                            zip(neural_value_category['correct_pictures'], neural_value_category['correct_prediction']):
-                        combination = encode_by_selective(image, label, global_config.selective_rate, neuron_number_list[k], non_class_l_avg, all_class_avg)
-                        correct_abstraction_list.append(combination)
+            if neural_value_category['correct_pictures'].shape[0] != 0:
+                for image, label in \
+                        zip(neural_value_category['correct_pictures'], neural_value_category['correct_prediction']):
+                    combination = encode_by_selective(image, label, global_config.selective_rate, neuron_number_list[k], non_class_l_avg, all_class_avg)
+                    correct_abstraction_list.append(combination)
             else:
-                correct_abstraction_list = None
+                correct_abstraction_list = np.array([])
 
-            if neural_value_category['wrong_pictures'] is not None:
-                if neural_value_category['wrong_pictures'].shape[0] == 0:
-                    wrong_abstraction_list = []
-                else:
-                    for image, label in \
-                            zip(neural_value_category['wrong_pictures'],  neural_value_category['wrong_prediction']):
-                        combination = encode_by_selective(image, label, global_config.selective_rate, neuron_number_list[k], non_class_l_avg, all_class_avg)
-                        wrong_abstraction_list.append(combination)
+            if neural_value_category['wrong_pictures'].shape[0] != 0:
+                for image, label in \
+                        zip(neural_value_category['wrong_pictures'],  neural_value_category['wrong_prediction']):
+                    combination = encode_by_selective(image, label, global_config.selective_rate, neuron_number_list[k], non_class_l_avg, all_class_avg)
+                    wrong_abstraction_list.append(combination)
             else:
-                wrong_abstraction_list = None
+                wrong_abstraction_list = np.array([])
 
-            combination_abstraction = {'correct_pictures': correct_abstraction_list,
+            combination_abstraction = {'correct_pictures': np.array(correct_abstraction_list),
                                        'correct_prediction': neural_value_category['correct_prediction'],
-                                       'wrong_pictures': wrong_abstraction_list,
+                                       'wrong_pictures': np.array(wrong_abstraction_list),
                                        'wrong_prediction': neural_value_category['wrong_prediction']}
             combination_abstraction_each_category[category] = combination_abstraction
 
@@ -222,27 +226,20 @@ def concatenate_data_between_layers(id_dataset, data_dict):
     abstraction_concatenated_dict = {}
     for category in range(num_of_labels[id_dataset]):
         correct_data = []
-        if data_dict[layers[0]][category]['correct_pictures'] is not None:
+        if data_dict[layers[0]][category]['correct_pictures'].shape[0] != 0:
             for k in range(len(layers)):
                 correct_data.append(data_dict[layers[k]][category]['correct_pictures'])
             correct_data = np.concatenate(correct_data, axis=1)
         else:
-            correct_data = None
+            correct_data = np.array([])
 
         wrong_data = []
-        if data_dict[layers[0]][category]['wrong_pictures'] is not None:
-            empty_flag = False
+        if np.array(data_dict[layers[0]][category]['wrong_pictures']).shape[0] != 0:
             for k in range(len(layers)):
-                if not data_dict[layers[k]][category]['wrong_pictures']:
-                    empty_flag = True
-                    break
                 wrong_data.append(data_dict[layers[k]][category]['wrong_pictures'])
-            if empty_flag:
-                wrong_data = np.array([])
-            else:
-                wrong_data = np.concatenate(wrong_data, axis=1)
+            wrong_data = np.concatenate(wrong_data, axis=1)
         else:
-            wrong_data = None
+            wrong_data = np.array([])
 
         concatenate_data = {'correct_pictures': correct_data,
                             'correct_prediction': data_dict[layers[0]][category]['correct_prediction'],
@@ -445,24 +442,27 @@ def auroc(distance_of_train_data, distance_of_normal_data, distance_of_bad_data,
     return auc_of_roc
 
 
-def sk_auc(distance_of_test_data, distance_of_bad_data, num_of_category):
-
-    auc_sum = 0
-    count = 0
-    for c in range(num_of_category):
+def sk_auc(id_dataset, distance_of_test_data, distance_of_bad_data):
+    auc_list = []
+    far95_list = []
+    for c in range(global_config.num_of_labels[id_dataset]):
         if not distance_of_bad_data[c]['wrong_pictures']:
-            print('{}/{}: AUROC: {}'.format(c, num_of_category, 'No examples'))
+            print('{}/{}: AUROC: {}'.format(c, global_config.num_of_labels[id_dataset], 'No examples'))
             continue
         y_true = [0 for _ in range(len(distance_of_test_data[c]['correct_pictures']))] + \
                  [1 for _ in range(len(distance_of_bad_data[c]['wrong_pictures']))]
         y_score = distance_of_test_data[c]['correct_pictures'] + distance_of_bad_data[c]['wrong_pictures']
         fpr, tpr, threshold = roc_curve(y_true, y_score)
         roc_auc = auc(fpr, tpr)
-        print('{}/{}: AUROC: {:.6f}'.format(c, num_of_category, roc_auc))
-        auc_sum += roc_auc
-        count += 1
-
-    return auc_sum/count
+        auc_list.append(roc_auc)
+        target_tpr = 0.95
+        target_threshold_idx = np.argmax(tpr >= target_tpr)
+        target_fpr = fpr[target_threshold_idx]
+        far95_list.append(target_fpr)
+        print('{}/{}: AUROC: {:.6f}, FAR95: {:.6f}, TPR: {}'.
+              format(c, global_config.num_of_labels[id_dataset], roc_auc, target_fpr, tpr[target_threshold_idx]))
+    print('avg-AUROC: {:.6f}, avg-FAR95: {:.6f}'.format(np.average(auc_list), np.average(far95_list)))
+    return
 
 
 def t_sne_visualization(data, category_number):

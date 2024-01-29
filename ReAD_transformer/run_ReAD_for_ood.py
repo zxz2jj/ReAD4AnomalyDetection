@@ -1,8 +1,9 @@
 import pickle
 import os
-import pandas as pd
+import time
+# import pandas as pd
 # import seaborn as sns
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 
 from load_data import load_data
 from ReAD import get_neural_value, statistic_of_neural_value, \
@@ -11,7 +12,6 @@ from global_config import num_of_labels, roberta_config
 from train_roberta_models import sentence_tokenizer
 
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 os.environ["WANDB_DISABLED"] = "true"
 
 
@@ -31,15 +31,12 @@ if __name__ == "__main__":
     k_means_centers = None
     distance_train_statistic = None
     if os.path.exists(detector_path + 'train_nv_statistic.pkl') and \
-            os.path.exists(detector_path + 'k_means_centers.pkl') and \
-            os.path.exists(detector_path + 'distance_of_ReAD_for_train_data.pkl'):
+            os.path.exists(detector_path + 'k_means_centers.pkl'):
         print("\nDetector is existed!")
         file1 = open(detector_path + 'train_nv_statistic.pkl', 'rb')
         file2 = open(detector_path + 'k_means_centers.pkl', 'rb')
-        file3 = open(detector_path + 'distance_of_ReAD_for_train_data.pkl', 'rb')
         train_nv_statistic = pickle.load(file1)
         k_means_centers = pickle.load(file2)
-        distance_train_statistic = pickle.load(file3)
 
     else:
         if not os.path.exists(f'./data/{id_dataset}'):
@@ -48,6 +45,8 @@ if __name__ == "__main__":
             os.mkdir(detector_path)
         # ********************** Train Detector **************************** #
         print('\n********************** Train Detector ****************************')
+        train_start_time = time.time()
+
         print('\nGet neural value of train dataset:')
         train_picture_neural_value = get_neural_value(id_dataset=id_dataset, dataset=train_data,
                                                       checkpoint=finetuned_checkpoint, is_anomaly=False)
@@ -73,15 +72,15 @@ if __name__ == "__main__":
         pickle.dump(k_means_centers, file2)
         file2.close()
 
-        print('\nCalculate distance between abstractions and cluster centers ...')
-        distance_train_statistic = statistic_distance(id_dataset=id_dataset, abstractions=train_ReAD_concatenated,
-                                                      cluster_centers=k_means_centers)
-        file3 = open(detector_path + 'distance_of_ReAD_for_train_data.pkl', 'wb')
-        pickle.dump(distance_train_statistic, file3)
-        file3.close()
+        train_end_time = time.time()
+        train_total_time = train_end_time-train_start_time
+        train_time_for_per_example = train_total_time / train_data.num_rows
+        print(f"\nTrain Process: total time-{train_total_time}s, per example-{train_time_for_per_example}s")
 
     # ********************** Evaluate OOD Detection **************************** #
     print('\n********************** Evaluate OOD Detection ****************************')
+    test_start_time = time.time()
+
     print('\nGet neural value of test dataset:')
     test_picture_neural_value = get_neural_value(id_dataset=id_dataset, dataset=test_data,
                                                  checkpoint=finetuned_checkpoint, is_anomaly=False)
@@ -92,10 +91,15 @@ if __name__ == "__main__":
     print('\nCalculate distance between abstractions and cluster centers ...')
     test_distance = statistic_distance(id_dataset=id_dataset, abstractions=test_ReAD_concatenated,
                                        cluster_centers=k_means_centers)
+    test_end_time = time.time()
+    test_total_time = test_end_time - test_start_time
+    test_time_for_per_example = test_total_time / test_data.num_rows
+    print(f"\nDetection Process(test): total time-{test_total_time}s, per example-{test_time_for_per_example}s")
 
     OOD_dataset = roberta_config[id_dataset]['ood_settings']
     for ood in OOD_dataset:
         print('\n************Evaluating*************')
+        ood_start_time = time.time()
         print(f'In-Distribution Data: {id_dataset}, Out-of-Distribution Data: {ood}.')
         ood_data = load_data(ood)
         _, ood_data = sentence_tokenizer(ood_data, finetuned_checkpoint)
@@ -110,12 +114,11 @@ if __name__ == "__main__":
         print('\nCalculate distance between abstractions and cluster centers ...')
         ood_distance = statistic_distance(id_dataset=id_dataset, abstractions=ood_ReAD_concatenated,
                                           cluster_centers=k_means_centers)
-
-        # auc = auroc(distance_train_statistic, clean_distance, adv_distance, num_of_labels[clean_dataset])
+        ood_end_time = time.time()
+        ood_total_time = ood_end_time - ood_start_time
+        ood_time_for_per_example = ood_total_time / ood_data.num_rows
         auc = sk_auc(id_dataset, test_distance, ood_distance)
-
-        print('\nPerformance of Detector:')
-        print('AUROC: {:.6f}'.format(auc))
+        print(f"Detection Process(ood): total time-{ood_total_time}s, per example-{ood_time_for_per_example}s")
         print('*************************************\n')
 
         # distance_list = []

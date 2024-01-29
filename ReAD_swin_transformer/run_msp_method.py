@@ -13,7 +13,6 @@ from torch.utils.data import Subset
 from sklearn.metrics import auc, roc_curve
 
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "6"
 os.environ["WANDB_DISABLED"] = "true"
 
 

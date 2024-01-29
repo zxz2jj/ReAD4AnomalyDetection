@@ -8,10 +8,10 @@ from sklearn.utils import shuffle
 
 def load_ood_data(ood_dataset):
     if ood_dataset == 'MNIST':
-        data = load_dataset('./data/mnist/mnist/')
+        data = load_dataset('./data/mnist/mnist/', cache_dir='./dataset/')
         data = Dataset.from_dict({'image': data['test']['image']})
     elif ood_dataset == 'FMNIST':
-        data = load_dataset('./data/fashion_mnist/fashion_mnist/')
+        data = load_dataset('./data/fashion_mnist/fashion_mnist/', cache_dir='./dataset/')
         data = Dataset.from_dict({'image': data['test']['image']})
     elif ood_dataset == 'Omniglot':
         data = load_omniglot()
@@ -121,6 +121,9 @@ def load_lsun():
 
 
 def load_gtsrb():
+    if os.path.exists('./data/gtsrb/gtsrb/dataset_dict.json'):
+        data = DatasetDict().load_from_disk('./data/gtsrb/gtsrb/')
+        return data
 
     train_dir = './data/public/GTSRB/Final_Training/Images/'
     x_train = []
@@ -157,7 +160,14 @@ def load_gtsrb():
     test_data = Dataset.from_dict({'image': x_test, 'label': y_test})
 
     data = DatasetDict({'train': train_data, 'test': test_data})
+    data.save_to_disk('./data/gtsrb/gtsrb/')
 
     return data
 
 
+if __name__ == '__main__':
+    # dataset = load_gtsrb()
+
+    dataset = load_dataset('./data/svhn/svhn/', 'cropped_digits', cache_dir='./dataset/')
+    del dataset['extra']
+    print('a')

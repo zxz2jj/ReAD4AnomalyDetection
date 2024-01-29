@@ -2,14 +2,15 @@ from __future__ import print_function
 import os
 import sys
 import tensorflow as tf
-from keras.models import Sequential, Model
-from keras.layers import Conv2D, MaxPooling2D
-from keras.layers import Dense, Activation, Dropout, Flatten
-from keras.layers import BatchNormalization, add, Input, AveragePooling2D
-from keras.optimizers import Adam, SGD
+from tensorflow.keras import Sequential, Model
+from tensorflow.keras.layers import Conv2D, MaxPooling2D
+from tensorflow.keras.layers import Dense, Activation, Dropout, Flatten
+from tensorflow.keras.layers import BatchNormalization, add, Input, AveragePooling2D
+from tensorflow.keras.optimizers import Adam, SGD
 
-from keras import regularizers
+from tensorflow.keras import regularizers
 sys.path.append(os.getcwd())
+from load_data import data_augmentation
 
 
 class ResNet18Model(object):
@@ -62,10 +63,9 @@ class ResNet18Model(object):
         out = Activation('relu')(out)
         return out
 
-    def resnet18(self, input_shape, weight_decay=1e-4, lr=1e-1):
-        input = Input(shape=input_shape)
-        x = input
-        x = self.conv2d_bn_relu(x, filters=64, kernel_size=(3, 3), weight_decay=weight_decay, strides=(1, 1))
+    def resnet18(self, input_shape,  weight_decay=1e-4):
+        inputs = Input(shape=input_shape)
+        x = self.conv2d_bn_relu(inputs, filters=64, kernel_size=(3, 3), weight_decay=weight_decay, strides=(1, 1))
         # # conv 2
         x = self.ResidualBlock(x, filters=64, kernel_size=(3, 3), weight_decay=weight_decay, downsample=False)
         x = Dropout(0.4)(x)
@@ -87,30 +87,40 @@ class ResNet18Model(object):
         x = Dropout(0.5)(x)
         x = Dense(self.train_class_number, activation=None)(x)
         x = Activation('softmax')(x)
-        model = Model(input, x, name='ResNet18')
-        opt = SGD(lr=lr, momentum=0.9, nesterov=False)
+        model = Model(inputs, x, name='ResNet18')
+        opt = SGD(lr=0.1, momentum=0.9, nesterov=False)
         model.compile(optimizer=opt, loss='categorical_crossentropy', metrics=['accuracy'])
-        model.summary()
+
         return model
 
-    def lr_scheduler(self, epoch, lr):
-        new_lr = lr * (0.1 ** (epoch // 50))
-        print('new lr:%.2e' % new_lr)
-        return new_lr
+    @staticmethod
+    def lr_schedule(epoch):
+        lr = 0.1 * 0.1 ** (epoch // 25)
+        print('lr:%.2e' % lr)
+        return lr
 
-    def train(self, epochs=120):
-        lr = 1e-1
-        model = self.resnet18(input_shape=self.train_data.shape[1:], weight_decay=1e-4, lr=lr)
-        reduce_lr = tf.keras.callbacks.LearningRateScheduler(self.lr_scheduler)
-        # model.load_weights('/home/kengo/Documents/Detector_Evaluation/weights/svhn_resnet18.h5')
-        model.fit(x=self.train_data, y=self.train_label, batch_size=128, epochs=epochs, callbacks=[reduce_lr],
-                  validation_data=(self.test_data, self.test_label))
-        model.save(self.model_save_path+'tf_model.h5')
-        print("save path:", self.model_save_path)
+    def train(self, epochs=120, is_used_data_augmentation=False):
+        model = self.resnet18(input_shape=self.train_data.shape[1:])
+        # model.summary()
+        model_checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
+            filepath=self.model_save_path + 'tf_model.h5',
+            verbose=1,
+            save_best_only=True,
+            monitor='val_accuracy')
+        reduce_lr = tf.keras.callbacks.LearningRateScheduler(self.lr_schedule)
+        if is_used_data_augmentation:
+            print('Data Augmentation is Used!')
+            model.fit(data_augmentation.flow(x=self.train_data, y=self.train_label, batch_size=128), epochs=epochs,
+                      validation_data=(self.test_data, self.test_label),
+                      callbacks=[model_checkpoint_callback, reduce_lr])
+        else:
+            model.fit(x=self.train_data, y=self.train_label, batch_size=128, epochs=epochs,
+                      validation_data=(self.test_data, self.test_label),
+                      callbacks=[model_checkpoint_callback, reduce_lr])
 
     def show_model(self):
         model = tf.keras.models.load_model(self.model_save_path+'tf_model.h5')
-        # model.summary()
+        model.summary()
         print("train dataset:")
         print(self.train_data.shape, self.train_label.shape)
         model.evaluate(self.train_data, self.train_label, verbose=2)

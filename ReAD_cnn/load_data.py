@@ -5,11 +5,55 @@ import pandas as pd
 from skimage import io, transform
 from scipy.io import loadmat
 import tensorflow as tf
-from keras.datasets import mnist, fashion_mnist, cifar10
+from tensorflow.keras import datasets
+
+from tensorflow.keras import preprocessing
+
+data_augmentation = preprocessing.image.ImageDataGenerator(
+    # 布尔值，使输入数据集去中心化（均值为0）, 按feature执行
+    featurewise_center=False,
+    # 布尔值，使输入数据的每个样本均值为0
+    samplewise_center=False,
+    # 布尔值，将输入除以数据集的标准差以完成标准化, 按feature执行
+    featurewise_std_normalization=False,
+    # 布尔值，将输入的每个样本除以其自身的标准差
+    samplewise_std_normalization=False,
+    # 布尔值，对输入数据施加ZCA白化
+    zca_whitening=False,
+    # ZCA使用的eposilon，默认1e-6
+    zca_epsilon=1e-06,
+    # 整数，数据提升时图片随机转动的角度 (deg 0 to 180)
+    rotation_range=10,
+    # 浮点数，图片宽度的某个比例，数据提升时图片水平偏移的幅度
+    width_shift_range=0.1,
+    # 浮点数，图片高度的某个比例，数据提升时图片竖直偏移的幅度
+    height_shift_range=0.1,
+    # 浮点数，剪切强度（逆时针方向的剪切变换角度）
+    shear_range=10.,
+    # 浮点数或形如[lower,upper]的列表，随机缩放的幅度，若为浮点数，则相当于[lower,upper]
+    #  = [1 - zoom_range, 1+zoom_range]
+    zoom_range=0.,
+    # 浮点数，随机通道偏移的幅度
+    channel_shift_range=0.,
+    # ‘constant’，‘nearest’，‘reflect’或‘wrap’之一，当进行变换时超出边界的点将根据本参数
+    # 给定的方法进行处理
+    fill_mode='nearest',
+    # 浮点数或整数，当fill_mode=constant时，指定要向超出边界的点填充的值
+    cval=0.,
+    # 布尔值，是否进行随机水平翻转
+    horizontal_flip=True,
+    # 布尔值，是否进行随机竖直翻转
+    vertical_flip=False,
+    # 重放缩因子,默认为None. 如果为None或0则不进行放缩,否则会将该数值乘到数据上(在应用其
+    # 他变换之前)
+    rescale=None,
+    # 将被应用于每个输入的函数。该函数将在图片缩放和数据提升之后运行。该函数接受一个参数，
+    # 为一张图片（秩为3的numpy array），并且输出一个具有相同shape的numpy array
+    preprocessing_function=None)
 
 
 def load_mnist():
-    (x_train, y_train), (x_test, y_test) = mnist.load_data()
+    (x_train, y_train), (x_test, y_test) = datasets.mnist.load_data()
     x_train = x_train.astype('float32') / 255.
     x_test = x_test.astype('float32') / 255.
     x_train = np.expand_dims(x_train, axis=3)
@@ -22,7 +66,7 @@ def load_mnist():
 
 
 def load_fmnist():
-    (x_train, y_train), (x_test, y_test) = fashion_mnist.load_data()
+    (x_train, y_train), (x_test, y_test) = datasets.fashion_mnist.load_data()
     x_train = x_train.astype('float32') / 255.
     x_test = x_test.astype('float32') / 255.
 
@@ -36,13 +80,26 @@ def load_fmnist():
 
 
 def load_cifar10():
-    (x_train, y_train), (x_test, y_test) = cifar10.load_data()
+    (x_train, y_train), (x_test, y_test) = datasets.cifar10.load_data()
     x_train = x_train.astype('float32') / 255.
     x_test = x_test.astype('float32') / 255.
     y_train = y_train.reshape([-1])
     y_test = y_test.reshape([-1])
     y_train_one_hot = tf.one_hot(y_train, 10)
     y_test_one_hot = tf.one_hot(y_test, 10)
+
+    return x_train, y_train_one_hot, \
+        x_test, y_test_one_hot
+
+
+def load_cifar100():
+    (x_train, y_train), (x_test, y_test) = datasets.cifar100.load_data()
+    x_train = x_train.astype('float32') / 255.
+    x_test = x_test.astype('float32') / 255.
+    y_train = y_train.reshape([-1])
+    y_test = y_test.reshape([-1])
+    y_train_one_hot = tf.one_hot(y_train, 100)
+    y_test_one_hot = tf.one_hot(y_test, 100)
 
     return x_train, y_train_one_hot, \
         x_test, y_test_one_hot
@@ -125,21 +182,6 @@ def load_svhn():
 
 
 def load_omniglot(resize=28):
-    # train_dir = '../public_data/Omniglot/images_background'
-    # x_train = []
-    # for alphabet in os.listdir(train_dir):
-    #     alphabet_path = os.path.join(train_dir, alphabet)
-    #     for character in os.listdir(alphabet_path):
-    #         character_path = os.path.join(alphabet_path, character)
-    #         for image in os.listdir(character_path):
-    #             img_path = os.path.join(character_path, image)
-    #             img = io.imread(img_path)
-    #             img = transform.resize(img, (resize, resize))
-    #             x_train.append(img)
-    # x_train = np.array(x_train)
-    # x_train = 1 - x_train
-    # x_train = np.expand_dims(x_train, -1)
-
     test_dir = './data/public/Omniglot/images_evaluation'
     x_test = []
     for alphabet in os.listdir(test_dir):
@@ -226,23 +268,23 @@ def load_ood_data(ood_dataset, id_model_path, num_of_categories):
     if ood_dataset == 'Omniglot':
         ood_test = load_omniglot()
     if ood_dataset == 'TinyImageNet':
-        if id_model_path.split('/')[-2].split('_')[-1] == 'cifar10':
+        if id_model_path.split('/')[-2].split('_')[-1] in ['cifar10', 'cifar100', 'svhn']:
             ood_test = load_tiny(resize=32)
-        elif id_model_path.split('/')[-2].split('_')[-1] == 'gtsrb':
+        elif id_model_path.split('/')[-2].split('_')[-1] in ['gtsrb']:
             ood_test = load_tiny(resize=48)
         else:
             ood_test = None
     if ood_dataset == 'LSUN':
-        if id_model_path.split('/')[-2].split('_')[-1] == 'cifar10':
+        if id_model_path.split('/')[-2].split('_')[-1] in ['cifar10', 'cifar100', 'svhn']:
             ood_test = load_lsun(resize=32)
-        elif id_model_path.split('/')[-2].split('_')[-1] == 'gtsrb':
+        elif id_model_path.split('/')[-2].split('_')[-1] in ['gtsrb']:
             ood_test = load_lsun(resize=48)
         else:
             ood_test = None
     if ood_dataset == 'iSUN':
-        if id_model_path.split('/')[-2].split('_')[-1] == 'cifar10':
+        if id_model_path.split('/')[-2].split('_')[-1] in ['cifar10', 'cifar100', 'svhn']:
             ood_test = load_isun(resize=32)
-        elif id_model_path.split('/')[-2].split('_')[-1] == 'gtsrb':
+        elif id_model_path.split('/')[-2].split('_')[-1] in ['gtsrb']:
             ood_test = load_isun(resize=48)
         else:
             ood_test = None
@@ -266,8 +308,12 @@ def load_ood_data(ood_dataset, id_model_path, num_of_categories):
     for c in range(num_of_categories):
         data_category = ood_test[prediction == c]
         prediction_category = prediction[prediction == c]
-        ood_dict_category = {'correct_pictures': None, 'correct_prediction': None,
-                             'wrong_pictures': data_category, 'wrong_prediction': prediction_category}
+        if data_category.shape[0] == 0:
+            ood_dict_category = {'correct_pictures': None, 'correct_prediction': None,
+                                 'wrong_pictures': None, 'wrong_prediction': None}
+        else:
+            ood_dict_category = {'correct_pictures': None, 'correct_prediction': None,
+                                 'wrong_pictures': data_category, 'wrong_prediction': prediction_category}
         ood_dict[c] = ood_dict_category
 
     return ood_dict, number_of_test
