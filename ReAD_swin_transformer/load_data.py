@@ -167,7 +167,7 @@ def load_gtsrb():
 
 if __name__ == '__main__':
     # dataset = load_gtsrb()
-
-    dataset = load_dataset('./data/svhn/svhn/', 'cropped_digits', cache_dir='./dataset/')
-    del dataset['extra']
-    print('a')
+    dataset = load_uniform_noise()
+    # dataset = load_dataset('./data/svhn/svhn/', 'cropped_digits', cache_dir='./dataset/')
+    # del dataset['extra']
+    # print('a')

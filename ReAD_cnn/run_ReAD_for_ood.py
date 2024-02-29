@@ -157,7 +157,7 @@ if __name__ == "__main__":
         ood_end_time = time.time()
         ood_total_time = ood_end_time - ood_start_time
         ood_time_for_per_example = ood_total_time / number_of_ood
-        auc = sk_auc(id_dataset, test_distance, ood_distance)
+        sk_auc(id_dataset, test_distance, ood_distance)
         print(f"Detection Process(ood): total time-{ood_total_time}s, per example-{ood_time_for_per_example}s")
         print('*************************************\n')
 

@@ -32,7 +32,7 @@ def get_neural_value(id_dataset, dataset, checkpoint, is_ood=False):
     neural_value_list = list()
     predictions_list = list()
 
-    batch_size = 64
+    batch_size = 16
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print(f'Device: {device}, BatchSize: {batch_size}')
     model.to(device)
@@ -435,7 +435,7 @@ def auroc(distance_of_train_data, distance_of_normal_data, distance_of_bad_data,
     tpr_list = np.array(tpr_list)
     auc_of_roc = auc(fpr_list, tpr_list)
 
-    return auc_of_roc5
+    return auc_of_roc
 
 
 def sk_auc(id_dataset, distance_of_test_data, distance_of_bad_data):

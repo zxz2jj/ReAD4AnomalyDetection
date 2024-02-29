@@ -28,7 +28,7 @@ def get_neural_value(id_dataset, dataset, checkpoint, is_anomaly=False):
     neural_value_list = list()
     predictions_list = list()
 
-    batch_size = 32
+    batch_size = 4
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print(f'Device: {device}, BatchSize: {batch_size}')
     model.to(device)

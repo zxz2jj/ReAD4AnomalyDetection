@@ -32,12 +32,6 @@ def classify_id_pictures(id_dataset, dataset, labels, model_path):
         correct_prediction = prediction[prediction == category]
         wrong_prediction = prediction[prediction != category]
 
-        if correct_pictures.shape[0] == 0:
-            correct_pictures = None
-            correct_prediction = None
-        if wrong_pictures.shape[0] == 0:
-            wrong_pictures = None
-            wrong_prediction = None
         temp_dict = {'correct_pictures': correct_pictures, 'correct_prediction': correct_prediction,
                      'wrong_pictures': wrong_pictures, 'wrong_prediction': wrong_prediction}
         picture_classified[category] = temp_dict
@@ -61,7 +55,7 @@ def get_neural_value(id_dataset, model_path, pictures_classified):
             neural_value_category = {}
             correct_pictures = pictures_classified[category]['correct_pictures']
             wrong_pictures = pictures_classified[category]['wrong_pictures']
-            if correct_pictures is not None:
+            if correct_pictures.shape[0] != 0:
                 # correct_pictures_layer_output = get_layer_output([correct_pictures])
                 correct_pictures_layer_output = list()
                 batch_size = 128
@@ -75,7 +69,7 @@ def get_neural_value(id_dataset, model_path, pictures_classified):
                 neural_value_category['correct_pictures'] = np.array([])
                 neural_value_category['correct_prediction'] = np.array([])
 
-            if wrong_pictures is not None:
+            if wrong_pictures.shape[0] != 0:
                 # wrong_pictures_layer_output = get_layer_output([wrong_pictures])
                 wrong_pictures_layer_output = list()
                 batch_size = 128

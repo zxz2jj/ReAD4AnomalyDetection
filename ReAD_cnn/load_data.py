@@ -332,14 +332,14 @@ def load_clean_adv_data(id_dataset, attack, num_of_categories):
         data_category = clean_data[clean_labels == c]
         labels_category = clean_labels[clean_labels == c]
         clean_dict_category = {'correct_pictures': data_category, 'correct_prediction': labels_category,
-                               'wrong_pictures': None, 'wrong_prediction': None}
+                               'wrong_pictures': np.array([]), 'wrong_prediction': np.array([])}
         clean_dict[c] = clean_dict_category
 
     adv_dict = {}
     for c in range(num_of_categories):
         data_category = adv_data[adv_targets == c]
         targets_category = adv_targets[adv_targets == c]
-        adv_dict_category = {'correct_pictures': None, 'correct_prediction': None,
+        adv_dict_category = {'correct_pictures': np.array([]), 'correct_prediction': np.array([]),
                              'wrong_pictures': data_category, 'wrong_prediction': targets_category}
         adv_dict[c] = adv_dict_category
 
