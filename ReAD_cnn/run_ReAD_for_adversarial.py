@@ -16,20 +16,20 @@ from global_config import num_of_labels, selective_rate, cnn_config
 
 if __name__ == "__main__":
 
-    clean_dataset = 'fmnist'
-    model_path = './models/lenet_fmnist/'
-    detector_path = './data/fmnist/detector/'
-    x_train, y_train, x_test, y_test = load_fmnist()
+    # clean_dataset = 'fmnist'
+    # model_path = './models/lenet_fmnist/'
+    # detector_path = './data/fmnist/detector/'
+    # x_train, y_train, x_test, y_test = load_fmnist()
 
     # clean_dataset = 'cifar10'
     # model_path = './models/vgg19_cifar10/'
     # detector_path = './data/cifar10/detector/'
     # x_train, y_train, x_test, y_test = load_cifar10()
 
-    # clean_dataset = 'svhn'
-    # model_path = './models/resnet18_svhn/'
-    # detector_path = './data/svhn/detector/'
-    # x_train, y_train, x_test, y_test = load_svhn()
+    clean_dataset = 'svhn'
+    model_path = './models/resnet18_svhn/'
+    detector_path = './data/svhn/detector/'
+    x_train, y_train, x_test, y_test = load_svhn()
 
     # train models. If model is existed, it will show details of the model
     show_model = False
@@ -98,8 +98,8 @@ if __name__ == "__main__":
 
     # ********************** Evaluate adversarial Detection **************************** #
     print('\n********************** Evaluate Adversarial Detection ****************************')
-    # adversarial_attacks = ['ba']
-    adversarial_attacks = cnn_config[clean_dataset]['adversarial_settings']
+    adversarial_attacks = ['cw_l2']
+    # adversarial_attacks = cnn_config[clean_dataset]['adversarial_settings']
     for attack in adversarial_attacks:
         print(f'\nATTACK: {attack}')
         clean_data_classified, adv_data_classified, num_of_test = \

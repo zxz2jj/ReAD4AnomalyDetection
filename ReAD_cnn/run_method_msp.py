@@ -16,7 +16,7 @@ def get_confidence(dataset_name, checkpoint_path, pictures_classified):
         confidence_category = {}
         correct_pictures = pictures_classified[category]['correct_pictures']
         wrong_pictures = pictures_classified[category]['wrong_pictures']
-        if correct_pictures is not None:
+        if correct_pictures.shape[0] != 0:
             batch_size = 128
             batch_confidence = list()
             for i in range(0, len(correct_pictures), batch_size):
@@ -28,7 +28,7 @@ def get_confidence(dataset_name, checkpoint_path, pictures_classified):
         else:
             confidence_category['correct_pictures'] = np.array([])
             confidence_category['correct_prediction'] = np.array([])
-        if wrong_pictures is not None:
+        if wrong_pictures.shape[0] != 0:
             batch_size = 128
             batch_confidence = list()
             for i in range(0, len(wrong_pictures), batch_size):
@@ -73,11 +73,11 @@ def sk_auc(dataset_name, distance_of_test_data, distance_of_bad_data):
 
 if __name__ == "__main__":
 
-    # print('\n********************** Evaluate OOD Detection ****************************')
-    # id_dataset = 'mnist'
-    # model_path = './models/lenet_mnist/'
-    # detector_path = './data/mnist/detector/'
-    # x_train, y_train, x_test, y_test = load_mnist()
+    print('\n********************** Evaluate OOD Detection ****************************')
+    id_dataset = 'mnist'
+    model_path = './models/lenet_mnist/'
+    detector_path = './data/mnist/detector/'
+    x_train, y_train, x_test, y_test = load_mnist()
     #
     # id_dataset = 'fmnist'
     # model_path = './models/lenet_fmnist/'
@@ -103,35 +103,35 @@ if __name__ == "__main__":
     # model_path = './models/vgg19_gtsrb/'
     # detector_path = './data/gtsrb/detector/'
     # x_train, y_train, x_test, y_test = load_gtsrb()
-    #
-    # test_picture_classified = classify_id_pictures(id_dataset=id_dataset, dataset=x_test,
-    #                                                labels=tf.argmax(y_test, axis=1), model_path=model_path)
-    # test_confidence = get_confidence(dataset_name=id_dataset, checkpoint_path=model_path,
-    #                                  pictures_classified=test_picture_classified)
-    #
-    # OOD_dataset = cnn_config[id_dataset]['ood_settings']
-    # for ood in OOD_dataset:
-    #     print('\n************Evaluating*************')
-    #     print(f'In-Distribution Data: {id_dataset}, Out-of-Distribution Data: {ood}.')
-    #     ood_data, number_of_ood = load_ood_data(ood_dataset=ood, id_model_path=model_path,
-    #                                             num_of_categories=num_of_labels[id_dataset])
-    #
-    #     print('\nGet neural value of ood dataset...')
-    #     ood_confidence = get_confidence(dataset_name=id_dataset, checkpoint_path=model_path,
-    #                                     pictures_classified=ood_data)
-    #     sk_auc(id_dataset, test_confidence, ood_confidence)
-    #     print('*************************************')
+
+    test_picture_classified = classify_id_pictures(id_dataset=id_dataset, dataset=x_test,
+                                                   labels=tf.argmax(y_test, axis=1), model_path=model_path)
+    test_confidence = get_confidence(dataset_name=id_dataset, checkpoint_path=model_path,
+                                     pictures_classified=test_picture_classified)
+
+    OOD_dataset = cnn_config[id_dataset]['ood_settings']
+    for ood in OOD_dataset:
+        print('\n************Evaluating*************')
+        print(f'In-Distribution Data: {id_dataset}, Out-of-Distribution Data: {ood}.')
+        ood_data, number_of_ood = load_ood_data(ood_dataset=ood, id_model_path=model_path,
+                                                num_of_categories=num_of_labels[id_dataset])
+
+        print('\nGet neural value of ood dataset...')
+        ood_confidence = get_confidence(dataset_name=id_dataset, checkpoint_path=model_path,
+                                        pictures_classified=ood_data)
+        sk_auc(id_dataset, test_confidence, ood_confidence)
+        print('*************************************')
 
     print('\n********************** Evaluate Adversarial Detection ****************************')
 
-    clean_dataset = 'fmnist'
-    model_path = './models/lenet_fmnist/'
-
-    # clean_dataset = 'cifar10'
-    # model_path = './models/vgg19_cifar10/'
+    # clean_dataset = 'fmnist'
+    # model_path = './models/lenet_fmnist/'
 
     # clean_dataset = 'svhn'
     # model_path = './models/resnet18_svhn/'
+
+    clean_dataset = 'cifar10'
+    model_path = './models/vgg19_cifar10/'
 
     # adversarial_attacks = ['ba']
     adversarial_attacks = cnn_config[clean_dataset]['adversarial_settings']

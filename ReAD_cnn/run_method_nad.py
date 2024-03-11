@@ -15,12 +15,12 @@ from global_config import num_of_labels, selective_rate, cnn_config
 
 if __name__ == "__main__":
 
-    # print('\n********************** Evaluate OOD Detection ****************************')
-    # id_dataset = 'mnist'
-    # model_path = './models/lenet_mnist/'
-    # detector_path = './data/mnist/detector/'
-    # x_train, y_train, x_test, y_test = load_mnist()
-    #
+    print('\n********************** Evaluate OOD Detection ****************************')
+    id_dataset = 'mnist'
+    model_path = './models/lenet_mnist/'
+    detector_path = './data/mnist/detector/'
+    x_train, y_train, x_test, y_test = load_mnist()
+
     # id_dataset = 'fmnist'
     # model_path = './models/lenet_fmnist/'
     # detector_path = './data/fmnist/detector/'
@@ -45,48 +45,48 @@ if __name__ == "__main__":
     # model_path = './models/vgg19_gtsrb/'
     # detector_path = './data/gtsrb/detector/'
     # x_train, y_train, x_test, y_test = load_gtsrb()
-    #
-    # print('\n********************** Train Detector ****************************')
-    # train_picture_classified = classify_id_pictures(id_dataset=id_dataset, dataset=x_train,
-    #                                                 labels=tf.argmax(y_train, axis=1), model_path=model_path)
-    #
-    # print('\nGet neural value of train dataset:')
-    # train_picture_neural_value = get_neural_value(id_dataset=id_dataset, model_path=model_path,
-    #                                               pictures_classified=train_picture_classified)
-    #
-    # train_NAD_concatenated = \
-    #     concatenate_data_between_layers(id_dataset=id_dataset, data_dict=train_picture_neural_value)
-    #
-    # k_means_centers = k_means(data=train_NAD_concatenated,
-    #                           category_number=num_of_labels[id_dataset])
-    #
-    # # ********************** Evaluate OOD Detection **************************** #
-    # test_picture_classified = classify_id_pictures(id_dataset=id_dataset, dataset=x_test,
-    #                                                labels=tf.argmax(y_test, axis=1), model_path=model_path)
-    # print('\nGet neural value of test dataset:')
-    # test_picture_neural_value = get_neural_value(id_dataset=id_dataset, model_path=model_path,
-    #                                              pictures_classified=test_picture_classified)
-    # test_NAD_concatenated = concatenate_data_between_layers(id_dataset=id_dataset, data_dict=test_picture_neural_value)
-    # print('\nCalculate distance between abstractions and cluster centers ...')
-    # test_distance = statistic_distance(id_dataset=id_dataset, abstractions=test_NAD_concatenated,
-    #                                    cluster_centers=k_means_centers)
-    #
-    # OOD_dataset = cnn_config[id_dataset]['ood_settings']
-    # for ood in OOD_dataset:
-    #     print('\n************Evaluating*************')
-    #     print(f'In-Distribution Data: {id_dataset}, Out-of-Distribution Data: {ood}.')
-    #     ood_data, number_of_ood = load_ood_data(ood_dataset=ood, id_model_path=model_path,
-    #                                             num_of_categories=num_of_labels[id_dataset])
-    #
-    #     print('\nGet neural value of ood dataset...')
-    #     ood_picture_neural_value = get_neural_value(id_dataset=id_dataset, model_path=model_path,
-    #                                                 pictures_classified=ood_data)
-    #     ood_NAD_concatenated = concatenate_data_between_layers(id_dataset=id_dataset, data_dict=ood_picture_neural_value)
-    #     print('\nCalculate distance between abstractions and cluster centers ...')
-    #     ood_distance = statistic_distance(id_dataset=id_dataset, abstractions=ood_NAD_concatenated,
-    #                                       cluster_centers=k_means_centers)
-    #     auc = sk_auc(id_dataset, test_distance, ood_distance)
-    #     print('*************************************\n')
+
+    print('\n********************** Train Detector ****************************')
+    train_picture_classified = classify_id_pictures(id_dataset=id_dataset, dataset=x_train,
+                                                    labels=tf.argmax(y_train, axis=1), model_path=model_path)
+
+    print('\nGet neural value of train dataset:')
+    train_picture_neural_value = get_neural_value(id_dataset=id_dataset, model_path=model_path,
+                                                  pictures_classified=train_picture_classified)
+
+    train_NAD_concatenated = \
+        concatenate_data_between_layers(id_dataset=id_dataset, data_dict=train_picture_neural_value)
+
+    k_means_centers = k_means(data=train_NAD_concatenated,
+                              category_number=num_of_labels[id_dataset])
+
+    # ********************** Evaluate OOD Detection **************************** #
+    test_picture_classified = classify_id_pictures(id_dataset=id_dataset, dataset=x_test,
+                                                   labels=tf.argmax(y_test, axis=1), model_path=model_path)
+    print('\nGet neural value of test dataset:')
+    test_picture_neural_value = get_neural_value(id_dataset=id_dataset, model_path=model_path,
+                                                 pictures_classified=test_picture_classified)
+    test_NAD_concatenated = concatenate_data_between_layers(id_dataset=id_dataset, data_dict=test_picture_neural_value)
+    print('\nCalculate distance between abstractions and cluster centers ...')
+    test_distance = statistic_distance(id_dataset=id_dataset, abstractions=test_NAD_concatenated,
+                                       cluster_centers=k_means_centers)
+
+    OOD_dataset = cnn_config[id_dataset]['ood_settings']
+    for ood in OOD_dataset:
+        print('\n************Evaluating*************')
+        print(f'In-Distribution Data: {id_dataset}, Out-of-Distribution Data: {ood}.')
+        ood_data, number_of_ood = load_ood_data(ood_dataset=ood, id_model_path=model_path,
+                                                num_of_categories=num_of_labels[id_dataset])
+
+        print('\nGet neural value of ood dataset...')
+        ood_picture_neural_value = get_neural_value(id_dataset=id_dataset, model_path=model_path,
+                                                    pictures_classified=ood_data)
+        ood_NAD_concatenated = concatenate_data_between_layers(id_dataset=id_dataset, data_dict=ood_picture_neural_value)
+        print('\nCalculate distance between abstractions and cluster centers ...')
+        ood_distance = statistic_distance(id_dataset=id_dataset, abstractions=ood_NAD_concatenated,
+                                          cluster_centers=k_means_centers)
+        auc = sk_auc(id_dataset, test_distance, ood_distance)
+        print('*************************************\n')
 
     print('\n********************** Evaluate Adversarial Detection ****************************')
     # clean_dataset = 'fmnist'
@@ -94,15 +94,15 @@ if __name__ == "__main__":
     # detector_path = './data/fmnist/detector/'
     # x_train, y_train, x_test, y_test = load_fmnist()
 
-    # clean_dataset = 'cifar10'
-    # model_path = './models/vgg19_cifar10/'
-    # detector_path = './data/cifar10/detector/'
-    # x_train, y_train, x_test, y_test = load_cifar10()
+    # clean_dataset = 'svhn'
+    # model_path = './models/resnet18_svhn/'
+    # detector_path = './data/svhn/detector/'
+    # x_train, y_train, x_test, y_test = load_svhn()
 
-    clean_dataset = 'svhn'
-    model_path = './models/resnet18_svhn/'
-    detector_path = './data/svhn/detector/'
-    x_train, y_train, x_test, y_test = load_svhn()
+    clean_dataset = 'cifar10'
+    model_path = './models/vgg19_cifar10/'
+    detector_path = './data/cifar10/detector/'
+    x_train, y_train, x_test, y_test = load_cifar10()
 
     print('\n********************** Train Detector ****************************')
     train_picture_classified = classify_id_pictures(id_dataset=clean_dataset, dataset=x_train,
@@ -118,7 +118,6 @@ if __name__ == "__main__":
     k_means_centers = k_means(data=train_NAD_concatenated,
                               category_number=num_of_labels[clean_dataset])
 
-    # adversarial_attacks = ['ba']
     adversarial_attacks = cnn_config[clean_dataset]['adversarial_settings']
     for attack in adversarial_attacks:
         print(f'\nATTACK: {attack}')

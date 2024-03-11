@@ -12,15 +12,15 @@ from global_config import num_of_labels, roberta_config
 from train_roberta_models import sentence_tokenizer
 
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "1"
+# os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 os.environ["WANDB_DISABLED"] = "true"
 
 
 if __name__ == "__main__":
 
-    clean_dataset = 'sst2'
+    # clean_dataset = 'sst2'
     # clean_dataset = 'trec'
-    # clean_dataset = 'newsgroup'
+    clean_dataset = 'newsgroup'
 
     finetuned_checkpoint = f"./models/roberta-base-finetuned-{clean_dataset}/best"
     detector_path = f'./data/{clean_dataset}/detector/'
@@ -29,17 +29,13 @@ if __name__ == "__main__":
 
     train_nv_statistic = None
     k_means_centers = None
-    distance_train_statistic = None
     if os.path.exists(detector_path + 'train_nv_statistic.pkl') and \
-            os.path.exists(detector_path + 'k_means_centers.pkl') and \
-            os.path.exists(detector_path + 'distance_of_ReAD_for_train_data.pkl'):
+            os.path.exists(detector_path + 'k_means_centers.pkl'):
         print("\nDetector is existed!")
         file1 = open(detector_path + 'train_nv_statistic.pkl', 'rb')
         file2 = open(detector_path + 'k_means_centers.pkl', 'rb')
-        file3 = open(detector_path + 'distance_of_ReAD_for_train_data.pkl', 'rb')
         train_nv_statistic = pickle.load(file1)
         k_means_centers = pickle.load(file2)
-        distance_train_statistic = pickle.load(file3)
 
     else:
         if not os.path.exists(f'./data/{clean_dataset}'):
@@ -73,21 +69,14 @@ if __name__ == "__main__":
         pickle.dump(k_means_centers, file2)
         file2.close()
 
-        print('\nCalculate distance between abstractions and cluster centers ...')
-        distance_train_statistic = statistic_distance(id_dataset=clean_dataset, abstractions=train_ReAD_concatenated,
-                                                      cluster_centers=k_means_centers)
-        file3 = open(detector_path + 'distance_of_ReAD_for_train_data.pkl', 'wb')
-        pickle.dump(distance_train_statistic, file3)
-        file3.close()
-
     # ********************** Evaluate Adversarial Detection **************************** #
     print('\n********************** Evaluate Adversarial Detection ****************************')
     attacks = roberta_config[clean_dataset]['adversarial_settings']
     for attack in attacks:
         print(f'\nATTACK: {attack}')
         clean_data, adv_data = load_clean_adv_data(clean_dataset=clean_dataset, attack=attack)
-        clean_data = sentence_tokenizer(clean_data, finetuned_checkpoint)
-        adv_data = sentence_tokenizer(adv_data, finetuned_checkpoint)
+        _, clean_data = sentence_tokenizer(clean_data, finetuned_checkpoint)
+        _, adv_data = sentence_tokenizer(adv_data, finetuned_checkpoint)
 
         print('\nGet neural value of CLEAN data:')
         clean_picture_neural_value = get_neural_value(id_dataset=clean_dataset, dataset=clean_data,
@@ -115,11 +104,8 @@ if __name__ == "__main__":
         adv_distance = statistic_distance(id_dataset=clean_dataset, abstractions=adv_ReAD_concatenated,
                                           cluster_centers=k_means_centers)
 
-        # auc = auroc(distance_train_statistic, clean_distance, adv_distance, num_of_labels[clean_dataset])
-        auc = sk_auc(clean_dataset, clean_distance, adv_distance)
+        sk_auc(clean_dataset, clean_distance, adv_distance)
 
-        print('\nPerformance of Detector:')
-        print('AUROC: {:.6f}'.format(auc))
         print('*************************************\n')
 
         # distance_list = []

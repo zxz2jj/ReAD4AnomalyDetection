@@ -40,6 +40,8 @@ def get_confidence(id_dataset, data, checkpoint, is_ood=False):
         outputs = model(pixel_values.to(device))
         prediction = torch.argmax(outputs.logits, 1)
         probability = torch.softmax(torch.squeeze(outputs.logits), dim=-1)
+        if probability.dim() == 1:
+            probability = torch.unsqueeze(probability, 0)
         predictions_list.append(prediction.cpu().detach().numpy())
         probability_list.append(probability.cpu().detach().numpy())
         batch_index_start = batch_index_end
