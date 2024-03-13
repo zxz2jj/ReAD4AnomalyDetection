@@ -122,30 +122,30 @@ if __name__ == "__main__":
         sk_auc(id_dataset, test_confidence, ood_confidence)
         print('*************************************')
 
-    print('\n********************** Evaluate Adversarial Detection ****************************')
-
-    # clean_dataset = 'fmnist'
-    # model_path = './models/lenet_fmnist/'
-
-    # clean_dataset = 'svhn'
-    # model_path = './models/resnet18_svhn/'
-
-    clean_dataset = 'cifar10'
-    model_path = './models/vgg19_cifar10/'
-
-    # adversarial_attacks = ['ba']
-    adversarial_attacks = cnn_config[clean_dataset]['adversarial_settings']
-    for attack in adversarial_attacks:
-        print(f'\nATTACK: {attack}')
-        clean_data_classified, adv_data_classified, num_of_test = \
-            load_clean_adv_data(id_dataset=clean_dataset, attack=attack, num_of_categories=num_of_labels[clean_dataset])
-
-        print('\nGet neural value:')
-        print('CLEAN dataset ...')
-        clean_data_confidence = get_confidence(dataset_name=clean_dataset, checkpoint_path=model_path,
-                                               pictures_classified=clean_data_classified)
-        print('ADVERSARIAL dataset ...')
-        adv_data_confidence = get_confidence(dataset_name=clean_dataset, checkpoint_path=model_path,
-                                             pictures_classified=adv_data_classified)
-        sk_auc(clean_dataset, clean_data_confidence, adv_data_confidence)
+    # print('\n********************** Evaluate Adversarial Detection ****************************')
+    #
+    # # clean_dataset = 'fmnist'
+    # # model_path = './models/lenet_fmnist/'
+    #
+    # # clean_dataset = 'svhn'
+    # # model_path = './models/resnet18_svhn/'
+    #
+    # clean_dataset = 'cifar10'
+    # model_path = './models/vgg19_cifar10/'
+    #
+    # # adversarial_attacks = ['ba']
+    # adversarial_attacks = cnn_config[clean_dataset]['adversarial_settings']
+    # for attack in adversarial_attacks:
+    #     print(f'\nATTACK: {attack}')
+    #     clean_data_classified, adv_data_classified, num_of_test = \
+    #         load_clean_adv_data(id_dataset=clean_dataset, attack=attack, num_of_categories=num_of_labels[clean_dataset])
+    #
+    #     print('\nGet neural value:')
+    #     print('CLEAN dataset ...')
+    #     clean_data_confidence = get_confidence(dataset_name=clean_dataset, checkpoint_path=model_path,
+    #                                            pictures_classified=clean_data_classified)
+    #     print('ADVERSARIAL dataset ...')
+    #     adv_data_confidence = get_confidence(dataset_name=clean_dataset, checkpoint_path=model_path,
+    #                                          pictures_classified=adv_data_classified)
+    #     sk_auc(clean_dataset, clean_data_confidence, adv_data_confidence)
 

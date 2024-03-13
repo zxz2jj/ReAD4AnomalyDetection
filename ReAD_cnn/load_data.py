@@ -309,10 +309,10 @@ def load_ood_data(ood_dataset, id_model_path, num_of_categories):
         data_category = ood_test[prediction == c]
         prediction_category = prediction[prediction == c]
         if data_category.shape[0] == 0:
-            ood_dict_category = {'correct_pictures': None, 'correct_prediction': None,
-                                 'wrong_pictures': None, 'wrong_prediction': None}
+            ood_dict_category = {'correct_pictures': np.array([]), 'correct_prediction': np.array([]),
+                                 'wrong_pictures': np.array([]), 'wrong_prediction': np.array([])}
         else:
-            ood_dict_category = {'correct_pictures': None, 'correct_prediction': None,
+            ood_dict_category = {'correct_pictures': np.array([]), 'correct_prediction': np.array([]),
                                  'wrong_pictures': data_category, 'wrong_prediction': prediction_category}
         ood_dict[c] = ood_dict_category
 
