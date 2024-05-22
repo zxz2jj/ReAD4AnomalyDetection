@@ -438,9 +438,32 @@ def auroc(distance_of_train_data, distance_of_normal_data, distance_of_bad_data,
     return auc_of_roc
 
 
+# def sk_auc(id_dataset, distance_of_test_data, distance_of_bad_data):
+#     auc_list = []
+#     far95_list = []
+#     for c in range(global_config.num_of_labels[id_dataset]):
+#         if not distance_of_bad_data[c]['wrong_pictures']:
+#             print('{}/{}: AUROC: {}'.format(c, global_config.num_of_labels[id_dataset], 'No examples'))
+#             continue
+#         y_true = [0 for _ in range(len(distance_of_test_data[c]['correct_pictures']))] + \
+#                  [1 for _ in range(len(distance_of_bad_data[c]['wrong_pictures']))]
+#         y_score = distance_of_test_data[c]['correct_pictures'] + distance_of_bad_data[c]['wrong_pictures']
+#         fpr, tpr, threshold = roc_curve(y_true, y_score)
+#         roc_auc = auc(fpr, tpr)
+#         auc_list.append(roc_auc)
+#         target_tpr = 0.95
+#         target_threshold_idx = np.argmax(tpr >= target_tpr)
+#         target_fpr = fpr[target_threshold_idx]
+#         far95_list.append(target_fpr)
+#         print('{}/{}: AUROC: {:.6f}, FAR95: {:.6f}, TPR: {}'.
+#               format(c, global_config.num_of_labels[id_dataset], roc_auc, target_fpr, tpr[target_threshold_idx]))
+#     print('avg-AUROC: {:.6f}, avg-FAR95: {:.6f}'.format(np.average(auc_list), np.average(far95_list)))
+#     return
+
 def sk_auc(id_dataset, distance_of_test_data, distance_of_bad_data):
     auc_list = []
     far95_list = []
+    performance = []
     for c in range(global_config.num_of_labels[id_dataset]):
         if not distance_of_bad_data[c]['wrong_pictures']:
             print('{}/{}: AUROC: {}'.format(c, global_config.num_of_labels[id_dataset], 'No examples'))
@@ -455,7 +478,9 @@ def sk_auc(id_dataset, distance_of_test_data, distance_of_bad_data):
         target_threshold_idx = np.argmax(tpr >= target_tpr)
         target_fpr = fpr[target_threshold_idx]
         far95_list.append(target_fpr)
+        performance.append({f'{c}': {'AUROC': roc_auc, 'FAR95': tpr[target_threshold_idx]}})
         print('{}/{}: AUROC: {:.6f}, FAR95: {:.6f}, TPR: {}'.
               format(c, global_config.num_of_labels[id_dataset], roc_auc, target_fpr, tpr[target_threshold_idx]))
+    performance.append({'avg': {'AUROC': np.average(auc_list), 'FAR95': np.average(far95_list)}})
     print('avg-AUROC: {:.6f}, avg-FAR95: {:.6f}'.format(np.average(auc_list), np.average(far95_list)))
-    return
+    return performance

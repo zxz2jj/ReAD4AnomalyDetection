@@ -18,16 +18,16 @@ from sklearn.metrics import auc, roc_curve
 os.environ["WANDB_DISABLED"] = "true"
 
 
-def get_confidence(id_dataset, data, checkpoint, is_ood=False):
+def get_logits(id_dataset, data, checkpoint, split='test', is_ood=False, ood_name=None):
 
     config = SwinConfig.from_pretrained(checkpoint, num_labels=global_config.num_of_labels[id_dataset],
                                         output_hidden_states=False, ignore_mismatched_sizes=True)
-    labels = data['label'] if not is_ood else None
+    labels = np.array(data['label']) if not is_ood else None
     model = SwinForImageClassification.from_pretrained(checkpoint, config=config)
     data = image_tokenizer(data=data, model_checkpoint=checkpoint, mode='test')
 
-    probability_list = list()
     predictions_list = list()
+    logits_list = list()
     batch_size = 16
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print(f'Device: {device}, BatchSize: {batch_size}')
@@ -39,38 +39,35 @@ def get_confidence(id_dataset, data, checkpoint, is_ood=False):
         pixel_values = torch.stack(batch['pixel_values'])
         outputs = model(pixel_values.to(device))
         prediction = torch.argmax(outputs.logits, 1)
-        probability = torch.softmax(torch.squeeze(outputs.logits), dim=-1)
-        if probability.dim() == 1:
-            probability = torch.unsqueeze(probability, 0)
+        logit = outputs.logits
         predictions_list.append(prediction.cpu().detach().numpy())
-        probability_list.append(probability.cpu().detach().numpy())
+        logits_list.append(logit.cpu().detach().numpy())
         batch_index_start = batch_index_end
         batch_index_end = (batch_index_end + batch_size) \
             if (batch_index_end + batch_size) < data.shape[0] else data.shape[0]
-    probabilities = np.concatenate(probability_list)
+    logits = np.concatenate(logits_list)
     predictions = np.concatenate(predictions_list)
 
-    confidence = list()
     if not is_ood:
-        new_probabilities = probabilities[predictions == labels]
+        new_logits = logits[predictions == labels]
         new_predictions = predictions[predictions == labels]
-        for pred, prob in zip(new_predictions, new_probabilities):
-            confidence.append(1-prob[pred])
+        new_labels = labels[predictions == labels]
+        np.save(f'{id_dataset}_logits_{split}.npy', new_logits)
+        np.save(f'{id_dataset}_predictions_{split}.npy', new_predictions)
+        np.save(f'{id_dataset}_labels_{split}.npy', new_labels)
     else:
-        for pred, prob in zip(predictions, probabilities):
-            confidence.append(1-prob[pred])
-
-    return confidence
+        np.save(f'{id_dataset}-{ood_name}_logits.npy', logits)
+        np.save(f'{id_dataset}-{ood_name}_predictions.npy', predictions)
 
 
 if __name__ == "__main__":
 
-    dataset_name = 'mnist'
+    # dataset_name = 'mnist'
     # dataset_name = 'fashion_mnist'
     # dataset_name = 'svhn'
     # dataset_name = 'cifar100'
     # dataset_name = 'cifar10'
-    # dataset_name = 'gtsrb'
+    dataset_name = 'gtsrb'
 
     if dataset_name == 'mnist':
         row_names = ('image', 'label')
@@ -109,23 +106,17 @@ if __name__ == "__main__":
         exit()
 
     print(f'Get ID-{dataset_name} Confidence File ...')
+    rename_train_data = Dataset.from_dict({'image': dataset['train'][row_names[0]],
+                                          'label': dataset['train'][row_names[1]]})
+    get_logits(id_dataset=dataset_name, data=rename_train_data, checkpoint=finetuned_checkpoint, split='train')
     rename_test_data = Dataset.from_dict({'image': dataset['test'][row_names[0]],
                                           'label': dataset['test'][row_names[1]]})
-    test_confidence = get_confidence(id_dataset=dataset_name, data=rename_test_data,
-                                     checkpoint=finetuned_checkpoint, is_ood=False)
+    get_logits(id_dataset=dataset_name, data=rename_test_data, checkpoint=finetuned_checkpoint)
 
     OOD_dataset = swin_config[dataset_name]['ood_settings']
+    # OOD_dataset = ['GuassianNoise']
     for ood in OOD_dataset:
         print(f'Get OOD-{ood} Confidence File ...')
         ood_data = load_ood_data(ood_dataset=ood)
-        ood_confidence = get_confidence(id_dataset=dataset_name, data=ood_data,
-                                        checkpoint=finetuned_checkpoint, is_ood=True)
-        y_true = [0 for _ in range(test_confidence.__len__())] + [1 for _ in range(ood_confidence.__len__())]
-        y_score = test_confidence + ood_confidence
-        fpr, tpr, threshold = roc_curve(y_true, y_score)
-        roc_auc = auc(fpr, tpr)
-        target_tpr = 0.95
-        target_threshold_idx = np.argmax(tpr >= target_tpr)
-        target_fpr = fpr[target_threshold_idx]
-        print('\nAUROC: {:.6f}, FAR95: {:.6f}, TPR: {}'.format(roc_auc, target_fpr, tpr[target_threshold_idx]))
-        print('*************************************')
+        get_logits(id_dataset=dataset_name, data=ood_data, checkpoint=finetuned_checkpoint, is_ood=True, ood_name=ood)
+

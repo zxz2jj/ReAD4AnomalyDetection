@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import os.path
 import torch
 from datasets import load_dataset, Dataset
-from sklearn.manifold import TSNE
+from sklearn.manifold import TSNE, Isomap, LocallyLinearEmbedding, MDS
 import numpy as np
 from transformers import SwinConfig
 
@@ -16,7 +16,7 @@ from model_swin_transformer import SwinForImageClassification
 from train_swin_models import image_tokenizer
 from torch.utils.data import Subset
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "1"
+# os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 os.environ["WANDB_DISABLED"] = "true"
 
 # swin-tiny config
@@ -101,7 +101,10 @@ def t_sne_visualization(hidden_states_data, abstraction_data, category_number, s
         colour_label_str.append(label_to_color[c])
 
     hidden_states = np.concatenate(hidden_states, axis=0)
-    hidden_states_embedded = TSNE(n_components=2).fit_transform(hidden_states)
+    # hidden_states_embedded = TSNE(n_components=2).fit_transform(hidden_states)
+    # hidden_states_embedded = Isomap(n_components=2).fit_transform(hidden_states)
+    # hidden_states_embedded = LocallyLinearEmbedding(n_components=2).fit_transform(hidden_states)
+    hidden_states_embedded = MDS(n_components=2).fit_transform(hidden_states)
     max1, min1 = np.max(hidden_states_embedded, 0), np.min(hidden_states_embedded, 0)
     hidden_states_embedded = hidden_states_embedded / (max1 - min1)
 
@@ -129,8 +132,8 @@ if __name__ == '__main__':
 
     # dataset_name = 'mnist'
     # dataset_name = 'fashion_mnist'
-    # dataset_name = 'cifar10'
-    dataset_name = 'gtsrb'
+    dataset_name = 'cifar10'
+    # dataset_name = 'gtsrb'
 
     hidden_states_is_existed = True
     for k, depth in enumerate(depths):

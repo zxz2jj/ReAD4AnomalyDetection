@@ -30,7 +30,7 @@ def image_tokenizer(data, model_checkpoint, mode):
     normalize = Normalize(mean=feature_extractor.image_mean, std=feature_extractor.image_std)
     train_transforms = Compose(
         [
-            RandomResizedCrop(feature_extractor.size),
+            RandomResizedCrop((feature_extractor.size['height'], feature_extractor.size['width'])),
             RandomHorizontalFlip(),
             ToTensor(),
             normalize,
@@ -38,8 +38,8 @@ def image_tokenizer(data, model_checkpoint, mode):
     )
     test_transforms = Compose(
         [
-            Resize(feature_extractor.size),
-            CenterCrop(feature_extractor.size),
+            Resize((feature_extractor.size['height'], feature_extractor.size['width'])),
+            CenterCrop((feature_extractor.size['height'], feature_extractor.size['width'])),
             ToTensor(),
             normalize,
         ]

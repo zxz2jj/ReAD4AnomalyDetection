@@ -3,7 +3,7 @@ import os
 import time
 import pandas as pd
 # import seaborn as sns
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 from datasets import load_dataset
 
 from load_data import load_gtsrb, load_ood_data
@@ -20,9 +20,9 @@ if __name__ == "__main__":
     # id_dataset = 'mnist'
     # id_dataset = 'fashion_mnist'
     # id_dataset = 'cifar10'
-    id_dataset = 'svhn'
+    # id_dataset = 'svhn'
     # id_dataset = 'gtsrb'
-    # id_dataset = 'cifar100'
+    id_dataset = 'cifar100'
 
     if id_dataset == 'mnist':
         row_names = ('image', 'label')
@@ -169,34 +169,34 @@ if __name__ == "__main__":
         print(f"Detection Process(ood): total time-{ood_total_time}s, per example-{ood_time_for_per_example}s")
         print('*************************************\n')
 
-        # distance_list = []
-        # for i in range(10):
-        #     distance_list.append(clean_distance[i]['correct_pictures'])
-        #     distance_list.append(adv_distance[i]['wrong_pictures'])
-        # data = {'T0': distance_list[0]}
-        # data = pd.DataFrame(data, columns=['T0'])
-        # data['F0'] = pd.Series(distance_list[1])
-        # data['T1'] = pd.Series(distance_list[2])
-        # data['F1'] = pd.Series(distance_list[3])
-        # data['T2'] = pd.Series(distance_list[4])
-        # data['F2'] = pd.Series(distance_list[5])
-        # data['T3'] = pd.Series(distance_list[6])
-        # data['F3'] = pd.Series(distance_list[7])
-        # data['T4'] = pd.Series(distance_list[8])
-        # data['F4'] = pd.Series(distance_list[9])
-        # data['T5'] = pd.Series(distance_list[10])
-        # data['F5'] = pd.Series(distance_list[11])
-        # data['T6'] = pd.Series(distance_list[12])
-        # data['F6'] = pd.Series(distance_list[13])
-        # data['T7'] = pd.Series(distance_list[14])
-        # data['F7'] = pd.Series(distance_list[15])
-        # data['T8'] = pd.Series(distance_list[16])
-        # data['F8'] = pd.Series(distance_list[17])
-        # data['T9'] = pd.Series(distance_list[18])
-        # data['F9'] = pd.Series(distance_list[19])
-        # data = pd.DataFrame(data)
-        # sns.boxplot(data=data)
-        # plt.xticks(fontsize=15)
-        # plt.yticks(fontsize=15)
-        # plt.show()
+        distance_list = []
+        for i in range(10):
+            distance_list.append(clean_distance[i]['correct_pictures'])
+            distance_list.append(adv_distance[i]['wrong_pictures'])
+        data = {'T0': distance_list[0]}
+        data = pd.DataFrame(data, columns=['T0'])
+        data['F0'] = pd.Series(distance_list[1])
+        data['T1'] = pd.Series(distance_list[2])
+        data['F1'] = pd.Series(distance_list[3])
+        data['T2'] = pd.Series(distance_list[4])
+        data['F2'] = pd.Series(distance_list[5])
+        data['T3'] = pd.Series(distance_list[6])
+        data['F3'] = pd.Series(distance_list[7])
+        data['T4'] = pd.Series(distance_list[8])
+        data['F4'] = pd.Series(distance_list[9])
+        data['T5'] = pd.Series(distance_list[10])
+        data['F5'] = pd.Series(distance_list[11])
+        data['T6'] = pd.Series(distance_list[12])
+        data['F6'] = pd.Series(distance_list[13])
+        data['T7'] = pd.Series(distance_list[14])
+        data['F7'] = pd.Series(distance_list[15])
+        data['T8'] = pd.Series(distance_list[16])
+        data['F8'] = pd.Series(distance_list[17])
+        data['T9'] = pd.Series(distance_list[18])
+        data['F9'] = pd.Series(distance_list[19])
+        data = pd.DataFrame(data)
+        sns.boxplot(data=data)
+        plt.xticks(fontsize=15)
+        plt.yticks(fontsize=15)
+        plt.show()
 

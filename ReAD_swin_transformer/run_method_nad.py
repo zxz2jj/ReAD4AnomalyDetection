@@ -14,9 +14,9 @@ if __name__ == "__main__":
     # id_dataset = 'mnist'
     # id_dataset = 'fashion_mnist'
     # id_dataset = 'svhn'
-    # id_dataset = 'cifar100'
+    id_dataset = 'cifar100'
     # id_dataset = 'cifar10'
-    id_dataset = 'gtsrb'
+    # id_dataset = 'gtsrb'
 
     if id_dataset == 'mnist':
         row_names = ('image', 'label')
