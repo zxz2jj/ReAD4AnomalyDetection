@@ -17,8 +17,7 @@ roberta_config = {
         'layers_of_getting_value': [-2],
         'neurons_of_each_layer': [768],
         'ood_settings': ['trec', 'newsgroup', 'mnli', 'rte', 'wmt16', 'multi30k', 'noise'],
-        'adversarial_settings': ['SCPNAttacker', 'GANAttacker', 'TextFoolerAttacker',
-                                 'PWWSAttacker', 'TextBuggerAttacker', 'VIPERAttacker']
+        'adversarial_settings': None
     },
     'trec': {
         'layers_of_getting_value': [-2],

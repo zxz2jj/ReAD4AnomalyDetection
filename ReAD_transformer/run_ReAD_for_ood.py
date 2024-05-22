@@ -65,7 +65,7 @@ if __name__ == "__main__":
         train_ReAD_concatenated = \
             concatenate_data_between_layers(id_dataset=id_dataset, data_dict=train_ReAD_abstractions)
 
-        print('\nK-Means Clustering of Combination Abstraction on train data:')
+        print('\nK-Means Clustering of ReAD on train data:')
         k_means_centers = k_means(data=train_ReAD_concatenated,
                                   category_number=num_of_labels[id_dataset])
         file2 = open(detector_path + 'k_means_centers.pkl', 'wb')

@@ -1,5 +1,6 @@
 import pickle
 import os
+import time
 import pandas as pd
 # import seaborn as sns
 import matplotlib.pyplot as plt
@@ -45,6 +46,7 @@ if __name__ == "__main__":
         # ********************** Train Detector **************************** #
         print('\n********************** Train Detector ****************************')
         print('\nGet neural value of train dataset:')
+        train_start_time = time.time()
         train_picture_neural_value = get_neural_value(id_dataset=clean_dataset, dataset=train_data,
                                                       checkpoint=finetuned_checkpoint, is_anomaly=False)
         print('\nStatistic of train data neural value:')
@@ -69,10 +71,16 @@ if __name__ == "__main__":
         pickle.dump(k_means_centers, file2)
         file2.close()
 
+        train_end_time = time.time()
+        train_total_time = train_end_time-train_start_time
+        train_time_for_per_example = train_total_time / train_data.num_rows
+        print(f"\nTrain Process: total time-{train_total_time}s, per example-{train_time_for_per_example}s")
+
     # ********************** Evaluate Adversarial Detection **************************** #
     print('\n********************** Evaluate Adversarial Detection ****************************')
     attacks = roberta_config[clean_dataset]['adversarial_settings']
     for attack in attacks:
+        detection_start_time = time.time()
         print(f'\nATTACK: {attack}')
         clean_data, adv_data = load_clean_adv_data(clean_dataset=clean_dataset, attack=attack)
         _, clean_data = sentence_tokenizer(clean_data, finetuned_checkpoint)
@@ -100,12 +108,16 @@ if __name__ == "__main__":
         print('\nCalculate distance of CLEAN data:')
         clean_distance = statistic_distance(id_dataset=clean_dataset, abstractions=clean_ReAD_concatenated,
                                             cluster_centers=k_means_centers)
-        print('\nCalculate distance of CLEAN data:')
+        print('\nCalculate distance of ADVERSARIAL data:')
         adv_distance = statistic_distance(id_dataset=clean_dataset, abstractions=adv_ReAD_concatenated,
                                           cluster_centers=k_means_centers)
 
         sk_auc(clean_dataset, clean_distance, adv_distance)
+        detection_end_time = time.time()
+        detection_total_time = detection_end_time - detection_start_time
+        detection_time_for_per_example = detection_total_time / clean_data.num_rows
 
+        print(f"Detection Process(ood): total time-{detection_total_time}s, per example-{detection_time_for_per_example}s")
         print('*************************************\n')
 
         # distance_list = []

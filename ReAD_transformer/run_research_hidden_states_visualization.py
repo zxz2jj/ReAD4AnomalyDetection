@@ -14,7 +14,6 @@ from load_data import load_data
 from ReAD import encode_abstraction, concatenate_data_between_layers, statistic_of_neural_value
 from mode_roberta import RobertaForSequenceClassification
 from train_roberta_models import sentence_tokenizer
-from torch.utils.data import Subset
 
 os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 os.environ["WANDB_DISABLED"] = "true"
@@ -33,8 +32,6 @@ def get_hidden_states(id_dataset, tokenized_data, checkpoint, split):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model.to(device)
     for p, batch, label in zip(range(tokenized_data.shape[0]), tokenized_data, tokenized_data['label']):
-        if torch.cuda.is_available():
-            torch.cuda.empty_cache()
         print('\rImage: {} / {}'.format(p + 1, tokenized_data.shape[0]), end='')
         outputs = model(input_ids=torch.unsqueeze(torch.tensor(batch['input_ids']), 0).to(device),
                         attention_mask=torch.unsqueeze(torch.tensor(batch['attention_mask']), 0).to(device))
@@ -44,7 +41,7 @@ def get_hidden_states(id_dataset, tokenized_data, checkpoint, split):
         if prediction == label:
             correct_prediction.append(prediction.cpu().numpy())
             correct_confidence.append(confidence.cpu().detach().numpy())
-            correct_pooled_output.append(model.get_pooled_output().cpu().detach().numpy())
+            correct_pooled_output.append(model.get_hidden_fully_connected_states().cpu().detach().numpy())
             for s, state in enumerate(hidden_states):
                 correct_hidden_states[s].append(state[:, 0, :].cpu().detach().numpy())
 
@@ -107,17 +104,20 @@ def t_sne_visualization(hidden_states_data, abstraction_data, category_number, s
 
 if __name__ == '__main__':
 
-    dataset_name = 'sst2'
+    # dataset_name = 'sst2'
     # dataset_name = 'imdb'
     # dataset_name = 'trec'
-    # dataset_name = 'newsgroup'
+    dataset_name = 'newsgroup'
+
+    if not os.path.exists(f'./data/{dataset_name}/visualization/'):
+        os.mkdir(f'./data/{dataset_name}/visualization/')
 
     finetuned_checkpoint = f"./models/roberta-base-finetuned-{dataset_name}/best"
     detector_path = f'./data/{dataset_name}/detector/'
-    config = RobertaConfig.from_pretrained(finetuned_checkpoint)
+    model_config = RobertaConfig.from_pretrained(finetuned_checkpoint)
 
     hidden_states_is_existed = True
-    for i in range(config.num_hidden_layers+1):
+    for i in range(model_config.num_hidden_layers+1):
         print(f'Encoder:{i}|', end='')
         train_hidden_states_file = f'./data/{dataset_name}/hidden_states/train_hidden_states_encoder_{i}.npy'
         train_predictions_file = f'./data/{dataset_name}/hidden_states/train_predictions.npy'
@@ -140,10 +140,10 @@ if __name__ == '__main__':
         get_hidden_states(id_dataset=dataset_name, tokenized_data=test_data,
                           checkpoint=finetuned_checkpoint, split='test')
 
-    for i in range(config.num_hidden_layers+1):
-        print(f'-----------------------------------Encoder:{i}----------------------------------------')
+    for s in range(model_config.num_hidden_layers+1):
+        print(f'-----------------------------------Encoder:{s}----------------------------------------')
         print('Hidden States of Training data:')
-        train_hidden_states = np.load(f'./data/{dataset_name}/hidden_states/train_hidden_states_encoder_{i}.npy')
+        train_hidden_states = np.load(f'./data/{dataset_name}/hidden_states/train_hidden_states_encoder_{s}.npy')
         train_predictions = np.load(f'./data/{dataset_name}/hidden_states/train_predictions.npy')
         train_hidden_states_dict = {}
         layer_hidden_state = {}
@@ -159,7 +159,7 @@ if __name__ == '__main__':
                                                        neural_value=train_hidden_states_dict)
 
         print('Hidden States of Testing data:')
-        test_hidden_states = np.load(f'./data/{dataset_name}/hidden_states/test_hidden_states_encoder_{i}.npy')
+        test_hidden_states = np.load(f'./data/{dataset_name}/hidden_states/test_hidden_states_encoder_{s}.npy')
         test_predictions = np.load(f'./data/{dataset_name}/hidden_states/test_predictions.npy')
         test_hidden_states_dict = {}
         layer_hidden_state = {}
@@ -182,7 +182,7 @@ if __name__ == '__main__':
         t_sne_visualization(hidden_states_data=test_hidden_states_concatenated,
                             abstraction_data=test_ReAD_concatenated,
                             category_number=num_of_labels[dataset_name],
-                            save_path=f'./data/{dataset_name}/visualization/Stage_{k}_Encoder_{d}',
+                            save_path=f'./data/{dataset_name}/visualization/Encoder_{s}',
                             # mode='show',
                             mode='save')
 
