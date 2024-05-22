@@ -16,10 +16,10 @@ from global_config import num_of_labels, selective_rate, cnn_config
 if __name__ == "__main__":
 
     print('\n********************** Evaluate OOD Detection ****************************')
-    id_dataset = 'mnist'
-    model_path = './models/lenet_mnist/'
-    detector_path = './data/mnist/detector/'
-    x_train, y_train, x_test, y_test = load_mnist()
+    # id_dataset = 'mnist'
+    # model_path = './models/lenet_mnist/'
+    # detector_path = './data/mnist/detector/'
+    # x_train, y_train, x_test, y_test = load_mnist()
 
     # id_dataset = 'fmnist'
     # model_path = './models/lenet_fmnist/'
@@ -31,10 +31,10 @@ if __name__ == "__main__":
     # detector_path = './data/svhn/detector/'
     # x_train, y_train, x_test, y_test = load_svhn()
     #
-    # id_dataset = 'cifar100'
-    # model_path = './models/resnet18_cifar100/'
-    # detector_path = './data/cifar100/detector/'
-    # x_train, y_train, x_test, y_test = load_cifar100()
+    id_dataset = 'cifar100'
+    model_path = './models/resnet18_cifar100/'
+    detector_path = './data/cifar100/detector/'
+    x_train, y_train, x_test, y_test = load_cifar100()
     #
     # id_dataset = 'cifar10'
     # model_path = './models/vgg19_cifar10/'

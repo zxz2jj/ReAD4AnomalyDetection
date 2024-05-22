@@ -21,10 +21,10 @@ if __name__ == "__main__":
     # detector_path = './data/mnist/detector/'
     # x_train, y_train, x_test, y_test = load_mnist()
 
-    id_dataset = 'fmnist'
-    model_path = './models/lenet_fmnist/'
-    detector_path = './data/fmnist/detector/'
-    x_train, y_train, x_test, y_test = load_fmnist()
+    # id_dataset = 'fmnist'
+    # model_path = './models/lenet_fmnist/'
+    # detector_path = './data/fmnist/detector/'
+    # x_train, y_train, x_test, y_test = load_fmnist()
 
     # id_dataset = 'svhn'
     # model_path = './models/resnet18_svhn/'
@@ -36,10 +36,10 @@ if __name__ == "__main__":
     # detector_path = './data/cifar10/detector/'
     # x_train, y_train, x_test, y_test = load_cifar10()
 
-    # id_dataset = 'cifar100'
-    # model_path = './models/resnet18_cifar100/'
-    # detector_path = './data/cifar100/detector/'
-    # x_train, y_train, x_test, y_test = load_cifar100()
+    id_dataset = 'cifar100'
+    model_path = './models/resnet18_cifar100/'
+    detector_path = './data/cifar100/detector/'
+    x_train, y_train, x_test, y_test = load_cifar100()
 
     # id_dataset = 'gtsrb'
     # model_path = './models/vgg19_gtsrb/'

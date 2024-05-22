@@ -1,9 +1,9 @@
 import pickle
 import os
 import time
-import pandas as pd
-import seaborn as sns
-import matplotlib.pyplot as plt
+# import pandas as pd
+# import seaborn as sns
+# import matplotlib.pyplot as plt
 import tensorflow as tf
 
 from train_models import train_model
@@ -21,15 +21,15 @@ if __name__ == "__main__":
     # detector_path = './data/fmnist/detector/'
     # x_train, y_train, x_test, y_test = load_fmnist()
 
-    # clean_dataset = 'cifar10'
-    # model_path = './models/vgg19_cifar10/'
-    # detector_path = './data/cifar10/detector/'
-    # x_train, y_train, x_test, y_test = load_cifar10()
+    clean_dataset = 'cifar10'
+    model_path = './models/vgg19_cifar10/'
+    detector_path = './data/cifar10/detector/'
+    x_train, y_train, x_test, y_test = load_cifar10()
 
-    clean_dataset = 'svhn'
-    model_path = './models/resnet18_svhn/'
-    detector_path = './data/svhn/detector/'
-    x_train, y_train, x_test, y_test = load_svhn()
+    # clean_dataset = 'svhn'
+    # model_path = './models/resnet18_svhn/'
+    # detector_path = './data/svhn/detector/'
+    # x_train, y_train, x_test, y_test = load_svhn()
 
     # train models. If model is existed, it will show details of the model
     show_model = False
@@ -40,19 +40,18 @@ if __name__ == "__main__":
     k_means_centers = None
     distance_train_statistic = None
     if os.path.exists(detector_path + 'train_nv_statistic.pkl') and \
-            os.path.exists(detector_path + 'k_means_centers.pkl') and \
-            os.path.exists(detector_path + 'distance_of_ReAD_for_train_data.pkl'):
+            os.path.exists(detector_path + 'k_means_centers.pkl'):
         print("\nDetector is existed!")
         file1 = open(detector_path + 'train_nv_statistic.pkl', 'rb')
         file2 = open(detector_path + 'k_means_centers.pkl', 'rb')
-        file3 = open(detector_path + 'distance_of_ReAD_for_train_data.pkl', 'rb')
         train_nv_statistic = pickle.load(file1)
         k_means_centers = pickle.load(file2)
-        distance_train_statistic = pickle.load(file3)
 
     else:
         # ********************** Train Detector **************************** #
         print('\n********************** Train Detector ****************************')
+        train_start_time = time.time()
+
         train_picture_classified = classify_id_pictures(id_dataset=clean_dataset, dataset=x_train,
                                                         labels=tf.argmax(y_train, axis=1), model_path=model_path)
 
@@ -89,18 +88,17 @@ if __name__ == "__main__":
         pickle.dump(k_means_centers, file2)
         file2.close()
 
-        print('\nCalculate distance between abstractions and cluster centers ...')
-        distance_train_statistic = statistic_distance(id_dataset=clean_dataset, abstractions=train_ReAD_concatenated,
-                                                      cluster_centers=k_means_centers)
-        file3 = open(detector_path + 'distance_of_ReAD_for_train_data.pkl', 'wb')
-        pickle.dump(distance_train_statistic, file3)
-        file3.close()
+        train_end_time = time.time()
+        train_total_time = train_end_time-train_start_time
+        train_time_for_per_example = train_total_time / x_train.shape[0]
+        print(f"\nTrain Process: total time-{train_total_time}s, per example-{train_time_for_per_example}s")
 
     # ********************** Evaluate adversarial Detection **************************** #
     print('\n********************** Evaluate Adversarial Detection ****************************')
-    adversarial_attacks = ['cw_l2']
-    # adversarial_attacks = cnn_config[clean_dataset]['adversarial_settings']
+    # adversarial_attacks = ['cw_l2']
+    adversarial_attacks = cnn_config[clean_dataset]['adversarial_settings']
     for attack in adversarial_attacks:
+        detection_start_time = time.time()
         print(f'\nATTACK: {attack}')
         clean_data_classified, adv_data_classified, num_of_test = \
             load_clean_adv_data(id_dataset=clean_dataset, attack=attack, num_of_categories=num_of_labels[clean_dataset])
@@ -132,8 +130,12 @@ if __name__ == "__main__":
         adv_distance = statistic_distance(id_dataset=clean_dataset, abstractions=adv_ReAD_concatenated,
                                           cluster_centers=k_means_centers)
 
-        # auc = auroc(distance_train_statistic, clean_distance, adv_distance, num_of_labels[clean_dataset])
+        detection_end_time = time.time()
+        detection_total_time = detection_end_time - detection_start_time
+        detection_time_for_per_example = detection_total_time / (num_of_test*2)
         sk_auc(clean_dataset, clean_distance, adv_distance)
+
+        print(f"Detection Process(ood): total time-{detection_total_time}s, per example-{detection_time_for_per_example}s")
         print('*************************************\n')
 
         # distance_list = []
